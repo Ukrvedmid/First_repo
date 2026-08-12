@@ -1,5 +1,6 @@
 import hashlib
 import html
+import os
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -184,18 +185,28 @@ def run_once():
             )
 
 
+def _run_scan_with_logging() -> None:
+    print(
+        f'[INFO] scan started {datetime.now(timezone.utc).isoformat()}',
+        flush=True,
+    )
+    try:
+        run_once()
+    except Exception as exc:
+        print(f'[FATAL-SCAN] {exc}', flush=True)
+        if os.getenv('RUN_ONCE', '').casefold() in {'1', 'true', 'yes'}:
+            raise
+
+
 def main():
+    if os.getenv('RUN_ONCE', '').casefold() in {'1', 'true', 'yes'}:
+        _run_scan_with_logging()
+        return
+
     while True:
         config = load_config()
         interval = max(1, int(config.get('interval_minutes', 30)))
-        print(
-            f'[INFO] scan started {datetime.now(timezone.utc).isoformat()}',
-            flush=True,
-        )
-        try:
-            run_once()
-        except Exception as exc:
-            print(f'[FATAL-SCAN] {exc}', flush=True)
+        _run_scan_with_logging()
         time.sleep(interval * 60)
 
 
