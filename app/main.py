@@ -138,7 +138,7 @@ def run_once():
                 analysis = analyse_job(title, description, config)
                 now = datetime.now(timezone.utc).isoformat()
 
-                if analysis['score'] < minimum_score or analysis['negative']:
+                if analysis['score'] < minimum_score or analysis.get('exclude', False):
                     mark_seen(fp, name, title, url, now)
                     continue
 
