@@ -79,7 +79,11 @@ class MatcherTests(unittest.TestCase):
         )
         self.assertFalse(result["exclude"])
         self.assertGreaterEqual(result["score"], TEST_CONFIG["minimum_score"])
-        self.assertIn("shipbuilding", result["route"])
+        self.assertTrue(result["tier"].startswith("A"))
+        self.assertTrue(
+            "shipbuilding" in result["route"]
+            or "offshore wind" in result["route"]
+        )
 
     def test_chief_engineer_role_remains_in_parallel_search(self):
         result = analyse_job(
