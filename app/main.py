@@ -14,11 +14,33 @@ from app.sources import crawl as crawl_source
 
 CONFIG_PATH = Path('/app/config.yaml')
 EXTRA_SOURCES_PATH = Path('/app/extra_sources.yaml')
+EXTRA_PROFILE_PATH = Path('/app/extra_profile.yaml')
+
+
+def _extend_unique(target: list, values: list) -> None:
+    seen = {str(item).casefold() for item in target}
+    for value in values:
+        key = str(value).casefold()
+        if key not in seen:
+            target.append(value)
+            seen.add(key)
 
 
 def load_config():
     with CONFIG_PATH.open('r', encoding='utf-8') as f:
         config = yaml.safe_load(f) or {}
+
+    if EXTRA_PROFILE_PATH.exists():
+        with EXTRA_PROFILE_PATH.open('r', encoding='utf-8') as f:
+            profile = yaml.safe_load(f) or {}
+
+        config.setdefault('keywords', {})
+        for group, terms in profile.get('keywords', {}).items():
+            target = config['keywords'].setdefault(group, [])
+            _extend_unique(target, terms or [])
+
+        location_target = config.setdefault('priority_locations', [])
+        _extend_unique(location_target, profile.get('priority_locations', []) or [])
 
     if EXTRA_SOURCES_PATH.exists():
         with EXTRA_SOURCES_PATH.open('r', encoding='utf-8') as f:
