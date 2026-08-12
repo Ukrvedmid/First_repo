@@ -28,6 +28,9 @@ jobs:
       - name: Compile Python files
         run: python -m compileall -q app
 
+      - name: Import application
+        run: python -c "import app.main"
+
       - name: Run tests
         run: python -m unittest discover -s tests -v
 
