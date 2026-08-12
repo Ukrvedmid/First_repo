@@ -40,7 +40,12 @@ jobs:
           from pathlib import Path
           import yaml
 
-          for filename in ("config.yaml", "extra_profile.yaml", "extra_sources.yaml"):
+          for filename in (
+              "config.yaml",
+              "extra_profile.yaml",
+              "extra_sources.yaml",
+              "source_overrides.yaml",
+          ):
               with Path(filename).open("r", encoding="utf-8") as stream:
                   data = yaml.safe_load(stream)
               if not isinstance(data, dict):
