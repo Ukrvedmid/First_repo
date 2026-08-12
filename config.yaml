@@ -1,0 +1,57 @@
+interval_minutes: 30
+request_timeout_seconds: 25
+user_agent: "PersonalMarineJobAgent/1.0"
+keywords:
+  strong:
+    - "chief engineer"
+    - "technical superintendent"
+    - "fleet technical superintendent"
+    - "marine superintendent"
+    - "vessel manager"
+    - "rov pilot technician"
+    - "senior rov pilot technician"
+    - "commissioning engineer"
+  weak:
+    - "offshore"
+    - "subsea"
+    - "marine"
+    - "vessel"
+    - "rov"
+    - "dp"
+    - "dp2"
+    - "aberdeen"
+    - "united kingdom"
+    - "netherlands"
+minimum_score: 4
+sources:
+  - name: "Boskalis Careers"
+    type: "crawl"
+    enabled: true
+    start_urls:
+      - "https://careers.boskalis.com/vacancies?_locale=en"
+    allowed_domains: ["careers.boskalis.com"]
+    follow_url_contains: ["/vacancies"]
+    job_url_contains: ["/vacancy/"]
+    max_pages: 80
+    max_jobs: 250
+  - name: "DOF Careers"
+    type: "crawl"
+    enabled: true
+    start_urls:
+      - "https://www.dof.com/vacancies"
+    allowed_domains: ["dof.com"]
+    follow_url_contains: ["/vacancies"]
+    job_url_contains: ["/vacancies/"]
+    max_pages: 120
+    max_jobs: 250
+  - name: "Subsea7 Careers"
+    type: "crawl"
+    enabled: true
+    start_urls:
+      - "https://careers.subsea7.com/viewalljobs/?locale=en_GB"
+      - "https://careers.subsea7.com/go/All-Offshore-Jobs/9310855/"
+    allowed_domains: ["careers.subsea7.com"]
+    follow_url_contains: ["/viewalljobs/", "/go/"]
+    job_url_contains: ["/job/"]
+    max_pages: 100
+    max_jobs: 300
