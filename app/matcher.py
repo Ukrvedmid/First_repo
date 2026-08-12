@@ -23,10 +23,14 @@ DEFAULT_CLOSED_PHRASES = [
     "applications are closed",
     "application period has ended",
     "position has been filled",
+    "job posting is offline",
+    "the job posting is offline",
+    "job you are trying to apply for has been filled",
     "stelle steht leider nicht mehr zur verfügung",
     "diese stelle ist nicht mehr verfügbar",
     "bewerbungsfrist abgelaufen",
     "stelle wurde bereits besetzt",
+    "stellenanzeige ist offline",
     "vacature is niet meer beschikbaar",
 ]
 
@@ -44,16 +48,26 @@ DIRECT_SHORE_TITLE_TERMS = [
     "technical fleet manager",
     "vessel manager",
     "fleet manager",
+    "fleet maintenance manager",
+    "fleet maintenance superintendent",
     "port engineer",
     "technical operations manager",
     "marine surveyor",
     "surveyor engineer",
     "approval engineer",
+    "technical expert marine",
+    "marine technical expert",
+    "technical controller maritime",
+    "marine assurance advisor",
+    "dp assurance engineer",
+    "dp fmea surveyor",
     "technischer superintendent",
     "technischer inspektor",
     "technischer flottenmanager",
     "technischer schiffsinspektor",
     "schiffsinspektor",
+    "technischer experte marine",
+    "technischer experte schifffahrt",
 ]
 
 CLASS_SURVEY_TERMS = [
@@ -62,7 +76,16 @@ CLASS_SURVEY_TERMS = [
     "surveyor engineer",
     "approval engineer",
     "technical inspector",
+    "ship surveyor",
+    "machinery surveyor",
+    "marine inspector",
+    "technical expert marine",
+    "marine technical expert",
+    "marine customer center",
     "technischer inspektor",
+    "technischer experte marine",
+    "besichtiger marine",
+    "besichtiger schiff",
     "technischer sachverständiger schifffahrt",
     "sachverständiger schiffstechnik",
     "besichtiger schiffbau",
@@ -78,17 +101,24 @@ OEM_SERVICE_TERMS = [
     "service engineer",
     "service engineer marine",
     "marine service engineer",
+    "service technician marine",
+    "marine service technician",
+    "service manager marine",
+    "service project manager marine",
     "commissioning engineer",
     "commissioning manager",
     "technical support engineer",
+    "project engineer technical support",
     "serviceingenieur",
     "serviceingenieur marine",
     "serviceingenieur schiff",
     "inbetriebnahmeingenieur",
     "inbetriebnahmetechniker",
     "servicetechniker",
+    "service-techniker außendienst",
     "kundendienstingenieur",
     "leitender serviceingenieur",
+    "projektingenieur technischer support",
     "chefmonteur",
 ]
 
@@ -98,13 +128,22 @@ PROJECT_OPERATIONS_TERMS = [
     "project engineer shipbuilding",
     "project manager",
     "project manager shipbuilding",
+    "project manager marine projects",
+    "marine projects manager",
     "shipbuilding project manager",
     "technical project manager",
     "maintenance engineer",
     "maintenance manager",
+    "maintenance coordinator",
+    "maintenance planner",
     "reliability engineer",
     "operations engineer",
+    "operations governance manager",
     "asset manager",
+    "fleet performance manager",
+    "fleet performance engineer",
+    "vessel performance manager",
+    "vessel performance engineer",
     "site manager",
     "shipbuilding engineer",
     "naval architect",
@@ -112,8 +151,13 @@ PROJECT_OPERATIONS_TERMS = [
     "projektingenieur schiffbau",
     "projektleiter",
     "projektleiter schiffbau",
+    "projektleiter marineprojekte",
+    "projektleitung marineprojekte international",
     "projektmanager schiffbau",
     "instandhaltungsingenieur",
+    "instandhaltungskoordinator",
+    "instandhaltungsmanager",
+    "instandhaltungsleiter",
     "betriebsingenieur",
     "schiffsbetriebsingenieur",
     "schiffbauingenieur",
@@ -121,6 +165,7 @@ PROJECT_OPERATIONS_TERMS = [
     "technischer projektleiter",
     "bauleiter schiffbau",
     "bauleiter offshore",
+    "terminplaner",
 ]
 
 OFFSHORE_WIND_TERMS = [
@@ -131,7 +176,103 @@ OFFSHORE_WIND_TERMS = [
     "windenergie",
     "windkraft",
     "offshore service technician",
+    "production manager sov",
+    "sov manager",
+    "service operation vessel",
+    "offshore operations manager",
+    "offshore production manager",
+    "o&m concept expert",
+    "o&m manager offshore",
+    "operations governance manager",
+    "offshore asset manager",
+    "offshore maintenance manager",
+    "offshore operations engineer",
+    "offshore maintenance engineer",
+    "marine operations manager",
+    "marine operations coordinator",
     "bauleiter offshore",
+]
+
+# These rules do not reject a vacancy. They highlight likely barriers that need
+# human review or a tailored CV. They reflect the current candidate profile:
+# Chief Engineer / marine engineer, strong English, early-stage German, no
+# confirmed LNG-superintendent or wind-turbine-specific shore experience.
+POTENTIAL_GAP_RULES = [
+    (
+        "требуется сильный немецкий (обычно B2–C1)",
+        [
+            "verhandlungssicher deutsch",
+            "verhandlungssichere deutschkenntnisse",
+            "sehr gute deutschkenntnisse",
+            "fließende deutschkenntnisse",
+            "fliessende deutschkenntnisse",
+            "deutsch auf muttersprachniveau",
+            "german at native level",
+            "fluent german",
+            "german c1",
+            "german b2",
+        ],
+    ),
+    (
+        "нужен подтверждённый опыт LNG/LNG-STS",
+        [
+            "lng bunker vessel",
+            "lng bunker vessels",
+            "lng carrier",
+            "lng carriers",
+            "lng sts",
+            "ship-to-ship transfer",
+        ],
+    ),
+    (
+        "могут требовать прежний shore-опыт Technical Superintendent",
+        [
+            "experience as a technical superintendent",
+            "professional experience as a technical superintendent",
+            "years as a technical superintendent",
+            "berufserfahrung als technical superintendent",
+        ],
+    ),
+    (
+        "может требоваться профильное образование по электрике/автоматике",
+        [
+            "degree in electrical engineering",
+            "bachelor in electrical engineering",
+            "master in electrical engineering",
+            "studium der elektrotechnik",
+            "abgeschlossenes studium der elektrotechnik",
+            "elektrotechnik (bachelor",
+            "informationstechnik (bachelor",
+        ],
+    ),
+    (
+        "может требоваться прямой опыт эксплуатации offshore wind/WTG",
+        [
+            "experience managing operations on offshore wind farms",
+            "experience in offshore wind farm operations",
+            "knowledge of wind turbine generators",
+            "kenntnisse über die organisation und den betrieb von offshore-windparks",
+            "kenntnisse über den betrieb und die wartung von windkraftanlagen",
+        ],
+    ),
+    (
+        "PMI/IPMA указана как желательная или обязательная",
+        ["pmi certification", "ipma certification", "zertifizierung nach pmi", "zertifizierung nach ipma"],
+    ),
+    (
+        "нужна специальная HSE-квалификация SiFa/NEBOSH",
+        ["fachkraft für arbeitssicherheit", "sifa", "nebosh"],
+    ),
+    (
+        "возможны ограничения security clearance/defence",
+        [
+            "security clearance",
+            "national security vetting",
+            "sicherheitsüberprüfung",
+            "defence sector",
+            "verteidigungssektor",
+        ],
+    ),
 ]
 
 
@@ -176,12 +317,21 @@ def _route_for_job(title_text: str, body_text: str, sea_terms: list[str]) -> str
     if _matches(title_text, DIRECT_SHORE_TITLE_TERMS):
         return "Берег: управление флотом"
     if _matches(title_text, OFFSHORE_WIND_TERMS) or _matches(combined, OFFSHORE_WIND_TERMS):
-        return "Берег / выезды: offshore wind"
+        return "Берег / ротация: offshore wind и SOV operations"
     if _matches(title_text, OEM_SERVICE_TERMS):
         return "Берег / выезды: OEM service и commissioning"
     if _matches(title_text, PROJECT_OPERATIONS_TERMS):
         return "Берег: проекты, shipbuilding, maintenance и operations"
     return "Смежная инженерная вакансия"
+
+
+def _potential_gaps(title_text: str, body_text: str) -> list[str]:
+    combined = f"{title_text} {body_text}"
+    gaps: list[str] = []
+    for label, phrases in POTENTIAL_GAP_RULES:
+        if _matches(combined, phrases):
+            gaps.append(label)
+    return gaps
 
 
 def analyse_job(title: str, description: str, config: dict) -> dict:
@@ -242,6 +392,7 @@ def analyse_job(title: str, description: str, config: dict) -> dict:
 
     score = max(0, score)
     route = _route_for_job(title_text, body_text, sea_terms)
+    gaps = _potential_gaps(title_text, body_text)
     exclude = bool(negative_title or closed_matches)
 
     if closed_matches:
@@ -256,6 +407,15 @@ def analyse_job(title: str, description: str, config: dict) -> dict:
         tier = "B — хороший переход"
     else:
         tier = "C — смежная"
+
+    if tier.startswith("A") and not gaps:
+        recommendation = "ПОДАВАТЬ СРАЗУ"
+    elif tier.startswith("A"):
+        recommendation = "ПОДАВАТЬ, закрыв пробелы в CV/письме"
+    elif tier.startswith("B"):
+        recommendation = "РАССМОТРЕТЬ КАК ПЕРЕХОД НА БЕРЕГ"
+    else:
+        recommendation = "РЕЗЕРВ — проверка вручную"
 
     matched: list[str] = []
     matched_keys: set[str] = set()
@@ -282,7 +442,9 @@ def analyse_job(title: str, description: str, config: dict) -> dict:
         "matched": matched,
         "route": route,
         "tier": tier,
+        "recommendation": recommendation,
         "locations": location_matches,
+        "potential_gaps": gaps,
         "negative": negative_title + negative_body,
         "closed": closed_matches,
         "exclude": exclude,
