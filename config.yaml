@@ -1,28 +1,151 @@
 interval_minutes: 30
 request_timeout_seconds: 25
-user_agent: "PersonalMarineJobAgent/1.0"
+user_agent: "PersonalMarineJobAgent/1.1"
+
 keywords:
-  strong:
-    - "chief engineer"
+  priority:
     - "technical superintendent"
     - "fleet technical superintendent"
-    - "marine superintendent"
+    - "senior technical superintendent"
+    - "assistant technical superintendent"
+    - "technical vessel manager"
     - "vessel manager"
-    - "rov pilot technician"
-    - "senior rov pilot technician"
+    - "fleet manager"
+    - "port engineer"
+    - "technical manager"
+    - "marine surveyor"
+    - "surveyor engineer"
+    - "approval engineer"
+    - "field service engineer"
+    - "senior field service engineer"
+    - "service engineer"
     - "commissioning engineer"
+    - "commissioning manager"
+    - "technical support engineer"
+    - "project engineer"
+    - "technical project manager"
+    - "maintenance engineer"
+    - "maintenance manager"
+    - "reliability engineer"
+    - "operations engineer"
+    - "asset manager"
+    - "site manager"
+    - "offshore site manager"
+    - "technischer superintendent"
+    - "technischer inspektor"
+    - "serviceingenieur"
+    - "inbetriebnahmeingenieur"
+    - "projektingenieur"
+    - "instandhaltungsingenieur"
+    - "betriebsingenieur"
+    - "maschinenbauingenieur"
+    - "schiffbauingenieur"
+    - "technischer projektleiter"
+    - "technischer leiter"
+
+  strong:
+    - "chief engineer"
+    - "chief engineer qualification"
+    - "marine engineering"
+    - "mechanical engineering"
+    - "ship management"
+    - "fleet management"
+    - "marine systems"
+    - "ship machinery"
+    - "propulsion"
+    - "thruster"
+    - "diesel engine"
+    - "dual fuel"
+    - "power generation"
+    - "rotating equipment"
+    - "planned maintenance"
+    - "maintenance management"
+    - "troubleshooting"
+    - "drydock"
+    - "dry dock"
+    - "shipyard"
+    - "newbuilding"
+    - "commissioning"
+    - "field service"
+    - "technical support"
+    - "classification society"
+    - "class society"
+    - "ism"
+    - "isps"
+    - "offshore wind"
+    - "renewable energy"
+    - "offshore vessels"
+    - "subsea"
+    - "dp vessel"
+    - "dp2"
+    - "cmms"
+    - "pms"
+
+  bridge:
+    - "offshore service technician"
+    - "service technician"
+    - "servicetechniker"
+    - "commissioning technician"
+    - "inbetriebnahmetechniker"
+    - "technical coordinator"
+    - "service coordinator"
+    - "lpsq officer"
+    - "hse advisor"
+    - "project supervisor"
+
   weak:
     - "offshore"
-    - "subsea"
     - "marine"
+    - "maritime"
     - "vessel"
-    - "rov"
-    - "dp"
-    - "dp2"
-    - "aberdeen"
-    - "united kingdom"
-    - "netherlands"
-minimum_score: 4
+    - "ship"
+    - "engine"
+    - "mechanical"
+    - "energy"
+    - "wind"
+    - "service"
+    - "maintenance"
+    - "repair"
+    - "technical"
+    - "engineering"
+
+  negative:
+    - "working student"
+    - "werkstudent"
+    - "internship"
+    - "intern"
+    - "praktikum"
+    - "apprentice"
+    - "ausbildung"
+    - "student assistant"
+
+priority_locations:
+  - "germany"
+  - "deutschland"
+  - "hamburg"
+  - "bremen"
+  - "bremerhaven"
+  - "kiel"
+  - "rostock"
+  - "lübeck"
+  - "hannover"
+  - "niedersachsen"
+  - "north rhine-westphalia"
+  - "nordrhein-westfalen"
+  - "nrw"
+  - "minden"
+  - "rheine"
+  - "duisburg"
+  - "essen"
+  - "dortmund"
+  - "düsseldorf"
+  - "augsburg"
+  - "ravensburg"
+  - "erlangen"
+  - "berlin"
+
+minimum_score: 6
+
 sources:
   - name: "Boskalis Careers"
     type: "crawl"
@@ -34,6 +157,7 @@ sources:
     job_url_contains: ["/vacancy/"]
     max_pages: 80
     max_jobs: 250
+
   - name: "DOF Careers"
     type: "crawl"
     enabled: true
@@ -44,6 +168,7 @@ sources:
     job_url_contains: ["/vacancies/"]
     max_pages: 120
     max_jobs: 250
+
   - name: "Subsea7 Careers"
     type: "crawl"
     enabled: true
@@ -55,3 +180,81 @@ sources:
     job_url_contains: ["/job/"]
     max_pages: 100
     max_jobs: 300
+
+  - name: "BSM Germany"
+    type: "crawl"
+    enabled: true
+    start_urls:
+      - "https://bsm.teamtailor.com/jobs"
+    allowed_domains: ["bsm.teamtailor.com"]
+    follow_url_contains: ["/jobs"]
+    job_url_contains: ["/jobs/"]
+    max_pages: 120
+    max_jobs: 300
+
+  - name: "Carnival Maritime Hamburg"
+    type: "crawl"
+    enabled: true
+    start_urls:
+      - "https://www.carnival-maritime.com/careers/jobs-on-shore.36108.html"
+    allowed_domains: ["carnival-maritime.com"]
+    follow_url_contains: ["/careers/jobs-on-shore"]
+    job_url_contains: ["/careers/jobs-detail"]
+    max_pages: 100
+    max_jobs: 250
+
+  - name: "DNV Germany"
+    type: "crawl"
+    enabled: true
+    start_urls:
+      - "https://jobs.dnv.com/locations/germany"
+      - "https://jobs.dnv.com/our-business/maritime"
+    allowed_domains: ["jobs.dnv.com"]
+    follow_url_contains: ["/locations/germany", "/our-business/maritime"]
+    job_url_contains: ["/job-search/"]
+    max_pages: 150
+    max_jobs: 350
+
+  - name: "Wartsila Germany"
+    type: "crawl"
+    enabled: true
+    start_urls:
+      - "https://careers.wartsila.com/search/?q=&locationsearch=Germany"
+    allowed_domains: ["careers.wartsila.com"]
+    follow_url_contains: ["/search/", "/go/"]
+    job_url_contains: ["/job/"]
+    max_pages: 150
+    max_jobs: 400
+
+  - name: "Everllence Germany"
+    type: "crawl"
+    enabled: true
+    start_urls:
+      - "https://jobs.everllence.com/search/?q=&locationsearch=Germany"
+    allowed_domains: ["jobs.everllence.com"]
+    follow_url_contains: ["/search/", "/go/"]
+    job_url_contains: ["/job/"]
+    max_pages: 150
+    max_jobs: 400
+
+  - name: "Vestas Germany"
+    type: "crawl"
+    enabled: true
+    start_urls:
+      - "https://careers.vestas.com/search/?q=&locationsearch=Germany"
+    allowed_domains: ["careers.vestas.com"]
+    follow_url_contains: ["/search/", "/go/"]
+    job_url_contains: ["/job/"]
+    max_pages: 150
+    max_jobs: 400
+
+  - name: "Siemens Energy Germany"
+    type: "crawl"
+    enabled: true
+    start_urls:
+      - "https://jobs.siemens-energy.com/en_US/CareersMarketplace/searchJobsGermany/"
+    allowed_domains: ["jobs.siemens-energy.com"]
+    follow_url_contains: ["/CareersMarketplace/", "/jobs/"]
+    job_url_contains: ["/FolderDetail/"]
+    max_pages: 180
+    max_jobs: 500
