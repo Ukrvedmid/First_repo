@@ -1,6 +1,6 @@
 sources:
   # Boskalis' generic vacancy search is JavaScript-driven. The discipline pages
-  # are rendered server-side and expose the relevant vacancy links reliably.
+  # are rendered server-side and expose their highlighted vacancy links.
   - name: "Boskalis Careers"
     type: "crawl"
     enabled: true
@@ -11,12 +11,9 @@ sources:
       - "https://careers.boskalis.com/option/function/sheq"
       - "https://careers.boskalis.com/option/function/crew"
     allowed_domains: ["careers.boskalis.com"]
-    follow_url_contains:
-      - "/option/function/"
-      - "/vacancies/function/"
     job_url_regex: "/vacancy/[0-9]+/[^/?#]+/?$"
-    max_pages: 120
-    max_jobs: 300
+    max_pages: 60
+    max_jobs: 200
 
   # DOF's public website loads its vacancy list with JavaScript. DOF uses the
   # Workable account 'dof', whose public JSON endpoint exposes published jobs.
