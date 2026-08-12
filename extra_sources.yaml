@@ -19,11 +19,17 @@ sources:
       - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Betriebsingenieur"
       - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Offshore%20Wind%20Engineer"
       - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Servicetechniker%20Schiff"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Production%20Manager%20SOV"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=O%26M%20Manager%20Offshore"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Operations%20Manager%20Offshore%20Wind"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Technischer%20Experte%20Marine"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Schiffsinspektor"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Instandhaltungskoordinator"
     allowed_domains: ["arbeitsagentur.de"]
     follow_url_contains: ["/jobsuche/suche?"]
     job_url_contains: ["/jobsuche/jobdetail/"]
-    max_pages: 420
-    max_jobs: 650
+    max_pages: 520
+    max_jobs: 850
 
   # Kongsberg publishes its complete vacancy list server-side, including
   # maritime, propulsion, automation, DP, subsea and field-service roles.
@@ -118,3 +124,78 @@ sources:
     job_url_regex: "/(chief-engineer|chief-officer|verstaerkung-im-crewing|auszubildende-n-zum-zur-schifffahrtskaufmann)[^/?#]*/?$"
     max_pages: 80
     max_jobs: 100
+
+  # Current Marine & Offshore surveying, classification and inspection jobs.
+  - name: "Bureau Veritas Germany Marine"
+    type: "crawl"
+    enabled: true
+    start_urls:
+      - "https://careers.bureauveritas.com/go/Our-job-offers/4113401/?q=&sortColumn=referencedate&sortDirection=desc"
+    allowed_domains: ["careers.bureauveritas.com"]
+    follow_url_contains: ["/go/Our-job-offers/"]
+    job_url_contains: ["/Germany/job/"]
+    max_pages: 260
+    max_jobs: 650
+
+  # Marine propulsion, commissioning, technical support and field repair.
+  - name: "SCHOTTEL Marine Propulsion"
+    type: "crawl"
+    enabled: true
+    start_urls:
+      - "https://jobs.schottel.de/"
+    allowed_domains: ["jobs.schottel.de"]
+    follow_url_contains: ["jobs.schottel.de/"]
+    job_url_regex: "/[^/?#]+-de-j[0-9]+\\.html$"
+    job_url_excludes: ["Ausbildung", "Duales-Studium", "Praktikum"]
+    max_pages: 180
+    max_jobs: 350
+
+  # German and international offshore-wind O&M, SOV and asset-management jobs.
+  - name: "RWE Offshore Wind Germany"
+    type: "crawl"
+    enabled: true
+    start_urls:
+      - "https://jobs.rwe.com/RWE/go/Operations-%26-Technicians_RWE-%28DE%29/8742001/"
+      - "https://jobs.rwe.com/RWE/go/All-Jobs_RWE-%28DE%29/8741501/"
+    allowed_domains: ["jobs.rwe.com"]
+    follow_url_contains: ["/RWE/go/"]
+    job_url_contains: ["/RWE/job/"]
+    max_pages: 360
+    max_jobs: 800
+
+  # Northern German naval shipbuilding, ship repair, ILS and project management.
+  - name: "NVL Naval Shipbuilding Germany"
+    type: "crawl"
+    enabled: true
+    start_urls:
+      - "https://jobportal.nvl.de/defence/viewAusschreibungen.html"
+    allowed_domains: ["jobportal.nvl.de"]
+    follow_url_contains: ["/defence/viewAusschreibungen.html"]
+    job_url_regex: "/defence/viewAusschreibung/[0-9]{4}-[0-9]+\\.html$"
+    max_pages: 180
+    max_jobs: 350
+
+  # PALFINGER industrial and marine service vacancies in Germany.
+  - name: "PALFINGER Germany Service"
+    type: "crawl"
+    enabled: true
+    start_urls:
+      - "https://career.palfinger.com/search/?q=&locationsearch=Germany"
+    allowed_domains: ["career.palfinger.com"]
+    follow_url_contains: ["/search/", "/go/"]
+    job_url_contains: ["/job/"]
+    max_pages: 220
+    max_jobs: 500
+
+  # Broader German industrial bridge: maintenance, commissioning, plant service
+  # and shipbuilding roles, including TKMS/Rheinmetall-linked opportunities.
+  - name: "thyssenkrupp Germany Engineering"
+    type: "crawl"
+    enabled: true
+    start_urls:
+      - "https://jobs.thyssenkrupp.com/de/search/"
+    allowed_domains: ["jobs.thyssenkrupp.com"]
+    follow_url_contains: ["/de/search/"]
+    job_url_regex: "/(de|en)/job/.+"
+    max_pages: 320
+    max_jobs: 850
