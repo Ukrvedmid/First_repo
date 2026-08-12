@@ -98,13 +98,17 @@ def _message_for_match(item: dict) -> str:
     analysis = item['analysis']
     locations = ', '.join(analysis['locations'][:4]) or 'не определено'
     matched = ', '.join(analysis['matched'][:10]) or '-'
+    gaps = '; '.join(analysis.get('potential_gaps', [])[:5]) or 'автоматически не обнаружены'
+    recommendation = analysis.get('recommendation', 'Проверить вручную')
 
     return (
-        f"{analysis['tier']} — score {analysis['score']}\n\n"
+        f"{analysis['tier']} — score {analysis['score']}\n"
+        f"Решение: {recommendation}\n\n"
         f"{html.unescape(item['title'])}\n\n"
         f"Маршрут: {analysis['route']}\n"
         f"География: {locations}\n"
         f"Почему подходит: {matched}\n"
+        f"Возможные пробелы: {gaps}\n"
         f"Источник: {item['source']}\n\n"
         f"{item['url']}"
     )
