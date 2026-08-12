@@ -1,0 +1,39 @@
+sources:
+  # Official German Federal Employment Agency. These searches cover both
+  # direct maritime jobs and realistic ship-to-shore transition routes.
+  - name: "Bundesagentur Maritime Engineering"
+    type: "crawl"
+    enabled: true
+    start_urls:
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Ingenieur%2Fin%20-%20Schiffbau%20und%20Meerestechnik"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Schiffsbetriebstechnik"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Technical%20Superintendent"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Marine%20Surveyor"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Technischer%20Inspektor%20Schifffahrt"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Projektleiter%20Schiffbau"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Projektingenieur%20Schiffbau"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Serviceingenieur%20Marine"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Field%20Service%20Engineer%20Marine"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Inbetriebnahmeingenieur%20Schiffbau"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Instandhaltungsingenieur"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Betriebsingenieur"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Offshore%20Wind%20Engineer"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Servicetechniker%20Schiff"
+    allowed_domains: ["arbeitsagentur.de"]
+    follow_url_contains: ["/jobsuche/suche?"]
+    job_url_contains: ["/jobsuche/jobdetail/"]
+    max_pages: 420
+    max_jobs: 650
+
+  # Kongsberg publishes its complete vacancy list server-side, including
+  # maritime, propulsion, automation, DP, subsea and field-service roles.
+  - name: "Kongsberg Global Maritime"
+    type: "crawl"
+    enabled: true
+    start_urls:
+      - "https://www.kongsberg.com/careers/vacancies/"
+    allowed_domains: ["kongsberg.com"]
+    follow_url_contains: ["/careers/vacancies/"]
+    job_url_contains: ["/careers/vacancies/"]
+    max_pages: 260
+    max_jobs: 500
