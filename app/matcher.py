@@ -200,6 +200,7 @@ def analyse_job(title: str, description: str, config: dict) -> dict:
         tier = "C — смежная"
 
     matched: list[str] = []
+    matched_keys: set[str] = set()
     for group in (
         priority_title,
         sea_title,
@@ -213,8 +214,10 @@ def analyse_job(title: str, description: str, config: dict) -> dict:
         weak_body,
     ):
         for term in group:
-            if _normalise(term) not in {_normalise(item) for item in matched}:
+            key = _normalise(term)
+            if key not in matched_keys:
                 matched.append(term)
+                matched_keys.add(key)
 
     return {
         "score": score,
@@ -223,6 +226,7 @@ def analyse_job(title: str, description: str, config: dict) -> dict:
         "tier": tier,
         "locations": location_matches,
         "negative": negative_title + negative_body,
+        "exclude": bool(negative_title),
     }
 
 
