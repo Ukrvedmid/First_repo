@@ -37,3 +37,39 @@ sources:
     job_url_regex: "/careers/vacancies/[^/?#]+/?$"
     max_pages: 260
     max_jobs: 500
+
+  # Hapag-Lloyd's official Softgarden career board. The source remains useful
+  # even when no matching Germany vacancy is open on a given day.
+  - name: "Hapag-Lloyd Global Careers"
+    type: "crawl"
+    enabled: true
+    start_urls:
+      - "https://hapaglloyd.softgarden.io/en/vacancies"
+    allowed_domains: ["hapaglloyd.softgarden.io"]
+    follow_url_contains: ["/en/vacancies"]
+    job_url_regex: "/job/[0-9]+/"
+    max_pages: 250
+    max_jobs: 500
+
+  # Classification, plan approval, survey and maritime advisory vacancies.
+  - name: "RINA Germany Marine"
+    type: "crawl"
+    enabled: true
+    start_urls:
+      - "https://careers.rina.org/search/?q=&locationsearch=Germany"
+    allowed_domains: ["careers.rina.org"]
+    follow_url_contains: ["/search/", "/go/"]
+    job_url_contains: ["/job/"]
+    max_pages: 180
+    max_jobs: 400
+
+  - name: "Lloyds Register Germany"
+    type: "crawl"
+    enabled: true
+    start_urls:
+      - "https://jobs.lr.org/search/?q=&locationsearch=Germany"
+    allowed_domains: ["jobs.lr.org"]
+    follow_url_contains: ["/search/", "/go/"]
+    job_url_contains: ["/job/"]
+    max_pages: 180
+    max_jobs: 400
