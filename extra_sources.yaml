@@ -73,3 +73,48 @@ sources:
     job_url_contains: ["/job/"]
     max_pages: 180
     max_jobs: 400
+
+  # German shipbuilding and ship-operation engineering. Fassmer currently
+  # publishes project-management, commissioning, service and shipbuilding jobs
+  # directly on this server-rendered career board.
+  - name: "Fassmer Shipbuilding Germany"
+    type: "crawl"
+    enabled: true
+    start_urls:
+      - "https://www.fassmer.de/de/karriere/stellenangebote/"
+    allowed_domains: ["fassmer.de"]
+    follow_url_contains: ["/de/karriere/stellenangebote/"]
+    job_url_regex: "/de/karriere/stellenangebote/[^/?#]+/?$"
+    max_pages: 180
+    max_jobs: 350
+
+  # Briese's listing page links to its official Onlyfy/Jobbase vacancy pages.
+  # This is one of the highest-value sources for a Chief Engineer moving into
+  # technical inspection, drydock and newbuilding work in Germany.
+  - name: "Briese Ship Management Germany"
+    type: "crawl"
+    enabled: true
+    start_urls:
+      - "https://briese.de/briese-schiffahrt/career"
+    allowed_domains:
+      - "briese.de"
+      - "briese-schiffahrts-gmbh-co-kg.onlyfy.jobs"
+      - "briese-schiffahrts-gmbh-co-kg.jobbase.io"
+    follow_url_contains:
+      - "/briese-schiffahrt/career"
+      - "/job/"
+    job_url_regex: "/job/[a-z0-9]+/?$"
+    max_pages: 120
+    max_jobs: 250
+
+  # German offshore-wind vessel operator with both shore and sea vacancies.
+  - name: "OS Energy Germany"
+    type: "crawl"
+    enabled: true
+    start_urls:
+      - "https://os-energy.de/de/karriere/"
+    allowed_domains: ["os-energy.de"]
+    follow_url_contains: ["/de/karriere/"]
+    job_url_regex: "/(chief-engineer|chief-officer|verstaerkung-im-crewing|auszubildende-n-zum-zur-schifffahrtskaufmann)[^/?#]*/?$"
+    max_pages: 80
+    max_jobs: 100
