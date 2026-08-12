@@ -63,7 +63,13 @@ def matching_signature(config: dict) -> str:
         'minimum_score': config.get('minimum_score', 1),
     }
     payload = yaml.safe_dump(relevant, allow_unicode=True, sort_keys=True)
-    return hashlib.sha256(payload.encode('utf-8')).hexdigest()[:16]
+    profile_signature = hashlib.sha256(payload.encode('utf-8')).hexdigest()[:16]
+
+    # Console-only diagnostics and Telegram delivery keep separate fingerprints.
+    # Therefore vacancies printed before Telegram setup are delivered once again
+    # when the bot token and chat ID are added later.
+    delivery_channel = 'telegram' if telegram_enabled() else 'console'
+    return f'{profile_signature}-{delivery_channel}'
 
 
 def fingerprint(
