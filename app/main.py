@@ -12,10 +12,12 @@ from app.db import has_seen, mark_seen
 from app.matcher import analyse_job
 from app.notify import send_telegram, telegram_enabled
 from app.sources import crawl as crawl_source
+from app.sources import workable as workable_source
 
 CONFIG_PATH = Path('/app/config.yaml')
 EXTRA_SOURCES_PATH = Path('/app/extra_sources.yaml')
 EXTRA_PROFILE_PATH = Path('/app/extra_profile.yaml')
+SOURCE_OVERRIDES_PATH = Path('/app/source_overrides.yaml')
 
 
 def _extend_unique(target: list, values: list) -> None:
@@ -25,6 +27,27 @@ def _extend_unique(target: list, values: list) -> None:
         if key not in seen:
             target.append(value)
             seen.add(key)
+
+
+def _merge_source_overrides(config: dict, overrides: list[dict]) -> None:
+    """Replace sources with the same name; append genuinely new sources."""
+    sources = config.setdefault('sources', [])
+    positions = {
+        str(source.get('name', '')).casefold(): index
+        for index, source in enumerate(sources)
+        if source.get('name')
+    }
+
+    for override in overrides:
+        if not isinstance(override, dict):
+            continue
+        name = str(override.get('name', '')).strip()
+        key = name.casefold()
+        if key and key in positions:
+            sources[positions[key]] = override
+        else:
+            positions[key] = len(sources)
+            sources.append(override)
 
 
 def load_config():
@@ -47,6 +70,11 @@ def load_config():
         with EXTRA_SOURCES_PATH.open('r', encoding='utf-8') as f:
             extra = yaml.safe_load(f) or {}
         config.setdefault('sources', []).extend(extra.get('sources', []))
+
+    if SOURCE_OVERRIDES_PATH.exists():
+        with SOURCE_OVERRIDES_PATH.open('r', encoding='utf-8') as f:
+            overrides = yaml.safe_load(f) or {}
+        _merge_source_overrides(config, overrides.get('sources', []) or [])
 
     return config
 
@@ -91,6 +119,8 @@ def fetch_source(source, session, config):
     ua = config.get('user_agent', 'PersonalJobAgent/1.0')
     if kind == 'crawl':
         return crawl_source.fetch(source, session, timeout, ua)
+    if kind == 'workable':
+        return workable_source.fetch(source, session, timeout, ua)
     raise ValueError(f'Unsupported source type: {kind}')
 
 
