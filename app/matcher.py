@@ -16,48 +16,89 @@ DEFAULT_SEA_TERMS = [
     "subsea engineer",
 ]
 
+DEFAULT_CLOSED_PHRASES = [
+    "this job is no longer taking applications",
+    "this position is no longer available",
+    "this vacancy is no longer available",
+    "applications are closed",
+    "application period has ended",
+    "position has been filled",
+    "stelle steht leider nicht mehr zur verfügung",
+    "diese stelle ist nicht mehr verfügbar",
+    "bewerbungsfrist abgelaufen",
+    "stelle wurde bereits besetzt",
+    "vacature is niet meer beschikbaar",
+]
+
 DIRECT_SHORE_TITLE_TERMS = [
     "technical superintendent",
     "fleet technical superintendent",
     "senior technical superintendent",
     "assistant technical superintendent",
+    "marine superintendent",
+    "fleet superintendent",
+    "ship superintendent",
+    "newbuilding superintendent",
+    "drydock superintendent",
     "technical vessel manager",
+    "technical fleet manager",
     "vessel manager",
     "fleet manager",
     "port engineer",
+    "technical operations manager",
     "marine surveyor",
     "surveyor engineer",
     "approval engineer",
     "technischer superintendent",
     "technischer inspektor",
+    "technischer flottenmanager",
+    "technischer schiffsinspektor",
+    "schiffsinspektor",
 ]
 
 CLASS_SURVEY_TERMS = [
     "marine surveyor",
+    "marine warranty surveyor",
     "surveyor engineer",
     "approval engineer",
     "technical inspector",
     "technischer inspektor",
+    "technischer sachverständiger schifffahrt",
+    "sachverständiger schiffstechnik",
+    "besichtiger schiffbau",
     "classification society",
     "class society",
+    "klassifikationsgesellschaft",
 ]
 
 OEM_SERVICE_TERMS = [
     "field service engineer",
     "senior field service engineer",
+    "field service engineer marine",
     "service engineer",
+    "service engineer marine",
+    "marine service engineer",
     "commissioning engineer",
     "commissioning manager",
     "technical support engineer",
     "serviceingenieur",
+    "serviceingenieur marine",
+    "serviceingenieur schiff",
     "inbetriebnahmeingenieur",
     "inbetriebnahmetechniker",
     "servicetechniker",
+    "kundendienstingenieur",
+    "leitender serviceingenieur",
+    "chefmonteur",
 ]
 
 PROJECT_OPERATIONS_TERMS = [
     "project engineer",
+    "marine project engineer",
+    "project engineer shipbuilding",
     "project manager",
+    "project manager shipbuilding",
+    "shipbuilding project manager",
     "technical project manager",
     "maintenance engineer",
     "maintenance manager",
@@ -65,11 +106,21 @@ PROJECT_OPERATIONS_TERMS = [
     "operations engineer",
     "asset manager",
     "site manager",
+    "shipbuilding engineer",
+    "naval architect",
     "projektingenieur",
+    "projektingenieur schiffbau",
     "projektleiter",
+    "projektleiter schiffbau",
+    "projektmanager schiffbau",
     "instandhaltungsingenieur",
     "betriebsingenieur",
+    "schiffsbetriebsingenieur",
+    "schiffbauingenieur",
+    "schiffbau-ingenieur",
     "technischer projektleiter",
+    "bauleiter schiffbau",
+    "bauleiter offshore",
 ]
 
 OFFSHORE_WIND_TERMS = [
@@ -78,7 +129,9 @@ OFFSHORE_WIND_TERMS = [
     "offshore installation",
     "wind turbine",
     "windenergie",
+    "windkraft",
     "offshore service technician",
+    "bauleiter offshore",
 ]
 
 
@@ -127,7 +180,7 @@ def _route_for_job(title_text: str, body_text: str, sea_terms: list[str]) -> str
     if _matches(title_text, OEM_SERVICE_TERMS):
         return "Берег / выезды: OEM service и commissioning"
     if _matches(title_text, PROJECT_OPERATIONS_TERMS):
-        return "Берег: проекты, maintenance и operations"
+        return "Берег: проекты, shipbuilding, maintenance и operations"
     return "Смежная инженерная вакансия"
 
 
@@ -143,6 +196,7 @@ def analyse_job(title: str, description: str, config: dict) -> dict:
     weak_terms = keyword_groups.get("weak", [])
     negative_terms = keyword_groups.get("negative", [])
     sea_terms = keyword_groups.get("sea", DEFAULT_SEA_TERMS)
+    closed_terms = config.get("closed_phrases", DEFAULT_CLOSED_PHRASES)
 
     priority_title = _matches(title_text, priority_terms)
     priority_body = _new_matches(_matches(body_text, priority_terms), priority_title)
@@ -156,6 +210,7 @@ def analyse_job(title: str, description: str, config: dict) -> dict:
     weak_body = _new_matches(_matches(body_text, weak_terms), weak_title)
     negative_title = _matches(title_text, negative_terms)
     negative_body = _new_matches(_matches(early_body, negative_terms), negative_title)
+    closed_matches = _matches(body_text, closed_terms)
 
     location_matches = _matches(
         f"{title_text} {body_text}",
@@ -178,7 +233,7 @@ def analyse_job(title: str, description: str, config: dict) -> dict:
     score -= min(12, len(negative_body) * 6)
 
     # Generic project/service titles should not outrank marine-specific jobs unless
-    # the description also confirms relevant machinery, maritime, offshore,
+    # the description confirms relevant machinery, maritime, offshore,
     # maintenance, commissioning or energy experience.
     direct_shore = bool(_matches(title_text, DIRECT_SHORE_TITLE_TERMS))
     has_domain_evidence = bool(strong_title or strong_body or sea_title or sea_body)
@@ -187,8 +242,11 @@ def analyse_job(title: str, description: str, config: dict) -> dict:
 
     score = max(0, score)
     route = _route_for_job(title_text, body_text, sea_terms)
+    exclude = bool(negative_title or closed_matches)
 
-    if negative_title:
+    if closed_matches:
+        tier = "X — вакансия закрыта"
+    elif negative_title:
         tier = "X — исключить"
     elif direct_shore or sea_title:
         tier = "A — прямое попадание"
@@ -226,7 +284,8 @@ def analyse_job(title: str, description: str, config: dict) -> dict:
         "tier": tier,
         "locations": location_matches,
         "negative": negative_title + negative_body,
-        "exclude": bool(negative_title),
+        "closed": closed_matches,
+        "exclude": exclude,
     }
 
 
