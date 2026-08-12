@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from html import unescape
 from typing import Any
+from urllib.parse import urlparse
 
 from bs4 import BeautifulSoup
 
@@ -10,7 +11,13 @@ def _plain_text(value: Any) -> str:
     if value is None:
         return ''
     if isinstance(value, str):
-        return BeautifulSoup(unescape(value), 'html.parser').get_text(' ', strip=True)
+        text = unescape(value).strip()
+        # Workable fields such as shortlink/application_url are already plain URLs.
+        # Passing those through BeautifulSoup triggers MarkupResemblesLocatorWarning.
+        parsed = urlparse(text)
+        if parsed.scheme in {'http', 'https'} and parsed.netloc:
+            return text
+        return BeautifulSoup(text, 'html.parser').get_text(' ', strip=True)
     if isinstance(value, dict):
         return ' '.join(
             part for part in (_plain_text(item) for item in value.values()) if part
