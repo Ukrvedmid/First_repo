@@ -1,5 +1,6 @@
 import re
 from collections import deque
+from html import unescape
 from urllib.parse import urljoin, urlparse, urlunparse
 
 from bs4 import BeautifulSoup
@@ -16,7 +17,10 @@ def _same_allowed_domain(url: str, domains: list[str]) -> bool:
 
 
 def _normalise_url(url: str) -> str:
-    parsed = urlparse(url)
+    # Some career sites render href values with indentation/newlines. Strip them
+    # before requests percent-encodes the whitespace into a broken URL.
+    cleaned = unescape(str(url)).strip()
+    parsed = urlparse(cleaned)
     # Fragments never change the vacancy content and create crawler duplicates.
     return urlunparse(parsed._replace(fragment=''))
 
