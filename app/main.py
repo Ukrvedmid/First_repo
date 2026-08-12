@@ -13,11 +13,19 @@ from app.notify import send_telegram, telegram_enabled
 from app.sources import crawl as crawl_source
 
 CONFIG_PATH = Path('/app/config.yaml')
+EXTRA_SOURCES_PATH = Path('/app/extra_sources.yaml')
 
 
 def load_config():
     with CONFIG_PATH.open('r', encoding='utf-8') as f:
-        return yaml.safe_load(f)
+        config = yaml.safe_load(f) or {}
+
+    if EXTRA_SOURCES_PATH.exists():
+        with EXTRA_SOURCES_PATH.open('r', encoding='utf-8') as f:
+            extra = yaml.safe_load(f) or {}
+        config.setdefault('sources', []).extend(extra.get('sources', []))
+
+    return config
 
 
 def matching_signature(config: dict) -> str:
