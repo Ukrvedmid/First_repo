@@ -1,9 +1,10 @@
 import json
+import os
 import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
 
-DB_PATH = Path('/data/agent.db')
+DB_PATH = Path(os.getenv('JOB_AGENT_DB_PATH', '/data/agent.db'))
 
 
 def connect():
