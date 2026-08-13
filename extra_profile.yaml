@@ -1,8 +1,76 @@
-# Broad supplemental keywords are intentionally disabled.
-# The strict shore-based marine engineering profile now lives in config.yaml.
+# Supplemental profile for shore-based marine service work.
+# Generic engineering titles below only pass when app.matcher also finds clear
+# maritime / ship / vessel context in the vacancy.
 keywords:
-  priority: []
-  strong: []
+  priority:
+    - "commissioning engineer"
+    - "commissioning manager"
+    - "commissioning technician"
+    - "field service engineer"
+    - "senior field service engineer"
+    - "service engineer"
+    - "service technician"
+    - "technical service engineer"
+    - "technical support engineer"
+    - "customer support engineer"
+    - "product support engineer"
+    - "maintenance engineer"
+    - "maintenance manager"
+    - "maintenance superintendent"
+    - "maintenance coordinator"
+    - "reliability engineer"
+    - "inbetriebnahmeingenieur"
+    - "inbetriebnahmetechniker"
+    - "serviceingenieur"
+    - "servicetechniker"
+    - "kundendienstingenieur"
+    - "instandhaltungsingenieur"
+    - "instandhaltungsmanager"
+    - "wartungsingenieur"
+
+  strong:
+    - "marine equipment"
+    - "ship equipment"
+    - "vessel equipment"
+    - "shipboard equipment"
+    - "marine machinery"
+    - "marine propulsion"
+    - "ship propulsion"
+    - "propulsion system"
+    - "main engine"
+    - "auxiliary engine"
+    - "marine diesel engine"
+    - "generator set"
+    - "diesel generator"
+    - "marine power generation"
+    - "power management system"
+    - "azimuth thruster"
+    - "thruster"
+    - "controllable pitch propeller"
+    - "marine gearbox"
+    - "shaft line"
+    - "steering gear"
+    - "marine pumps"
+    - "marine hydraulics"
+    - "marine automation"
+    - "marine electrical"
+    - "ballast water treatment"
+    - "commissioning"
+    - "field service"
+    - "technical support"
+    - "troubleshooting"
+    - "repair"
+    - "overhaul"
+    - "maintenance"
+    - "retrofit"
+    - "sea trials"
+    - "inbetriebnahme"
+    - "wartung"
+    - "instandhaltung"
+    - "reparatur"
+    - "fehlersuche"
+    - "störungsbehebung"
+
   bridge: []
   weak: []
   sea: []
