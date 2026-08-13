@@ -46,6 +46,12 @@ runuser -u "${APP_USER}" -- bash -c \
     'grep -qxF ".env" "$1/.git/info/exclude" 2>/dev/null || echo ".env" >> "$1/.git/info/exclude"' \
     _ "${REPO_DIR}"
 
+# The installer previously changed the executable bit of a tracked script. On
+# some filesystems Git reports that harmless mode-only change as a dirty working
+# tree. The deploy runner invokes scripts through bash, so executable-bit tracking
+# is unnecessary and must not block releases.
+runuser -u "${APP_USER}" -- git -C "${REPO_DIR}" config core.fileMode false
+
 runuser -u "${APP_USER}" -- git -C "${REPO_DIR}" fetch --prune origin "${DEPLOY_BRANCH}"
 runuser -u "${APP_USER}" -- git -C "${REPO_DIR}" checkout -B "${DEPLOY_BRANCH}" "origin/${DEPLOY_BRANCH}"
 
@@ -53,7 +59,6 @@ install -m 0644 "${REPO_DIR}/ops/job-agent-autodeploy.service" \
     /etc/systemd/system/job-agent-autodeploy.service
 install -m 0644 "${REPO_DIR}/ops/job-agent-autodeploy.timer" \
     /etc/systemd/system/job-agent-autodeploy.timer
-chmod 0755 "${REPO_DIR}/ops/job-agent-autodeploy.sh"
 
 systemctl daemon-reload
 # Do not leave a repeating timer active until the first controlled deployment
