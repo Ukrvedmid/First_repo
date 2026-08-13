@@ -56,8 +56,20 @@ install -m 0644 "${REPO_DIR}/ops/job-agent-autodeploy.timer" \
 chmod 0755 "${REPO_DIR}/ops/job-agent-autodeploy.sh"
 
 systemctl daemon-reload
+# Do not leave a repeating timer active until the first controlled deployment
+# has completed successfully.
+systemctl disable --now job-agent-autodeploy.timer >/dev/null 2>&1 || true
+systemctl reset-failed job-agent-autodeploy.service >/dev/null 2>&1 || true
+
+if ! systemctl start job-agent-autodeploy.service; then
+    echo >&2
+    echo "Первый контролируемый деплой завершился ошибкой." >&2
+    echo "Последние строки журнала:" >&2
+    journalctl -u job-agent-autodeploy.service -n 80 --no-pager -o cat >&2 || true
+    exit 1
+fi
+
 systemctl enable --now job-agent-autodeploy.timer
-systemctl start job-agent-autodeploy.service
 
 echo
 echo "===== AUTODEPLOY INSTALLED ====="
