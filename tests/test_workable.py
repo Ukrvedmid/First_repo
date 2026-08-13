@@ -53,6 +53,7 @@ class WorkableSourceTests(unittest.TestCase):
         )
         self.assertEqual(len(jobs), 1)
         self.assertEqual(jobs[0]['title'], 'Technical Superintendent')
+        self.assertEqual(jobs[0]['location'], 'Hamburg, Germany')
         self.assertEqual(
             jobs[0]['url'],
             'https://apply.workable.com/dof/j/ABC123/',
@@ -78,6 +79,7 @@ class WorkableSourceTests(unittest.TestCase):
         )
 
         self.assertEqual(len(jobs), 1)
+        self.assertEqual(jobs[0]['location'], '')
         self.assertEqual(
             jobs[0]['url'],
             'https://apply.workable.com/dof/j/ROV456/',
