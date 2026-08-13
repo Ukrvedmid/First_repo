@@ -1,3 +1,4 @@
+import json
 import re
 from collections import deque
 from html import unescape
@@ -49,6 +50,189 @@ def _should_follow(url: str, source: dict) -> bool:
     )
 
 
+def _clean_text(value) -> str:
+    if value is None:
+        return ''
+    if isinstance(value, str):
+        return ' '.join(unescape(value).split())
+    return ' '.join(str(value).split())
+
+
+def _dedupe(values: list[str]) -> list[str]:
+    result: list[str] = []
+    seen: set[str] = set()
+    for value in values:
+        cleaned = _clean_text(value)
+        key = cleaned.casefold()
+        if cleaned and key not in seen:
+            result.append(cleaned)
+            seen.add(key)
+    return result
+
+
+def _json_type_contains(value, expected: str) -> bool:
+    if isinstance(value, str):
+        return value.casefold() == expected.casefold()
+    if isinstance(value, list):
+        return any(_json_type_contains(item, expected) for item in value)
+    return False
+
+
+def _walk_job_postings(value):
+    if isinstance(value, dict):
+        if _json_type_contains(value.get('@type'), 'JobPosting'):
+            yield value
+        for child in value.values():
+            yield from _walk_job_postings(child)
+    elif isinstance(value, list):
+        for child in value:
+            yield from _walk_job_postings(child)
+
+
+def _render_country(value) -> str:
+    if isinstance(value, str):
+        return _clean_text(value)
+    if isinstance(value, dict):
+        return _clean_text(
+            value.get('name')
+            or value.get('addressCountry')
+            or value.get('identifier')
+        )
+    return ''
+
+
+def _render_location(value) -> str:
+    if value is None:
+        return ''
+    if isinstance(value, str):
+        return _clean_text(value)
+    if isinstance(value, list):
+        return '; '.join(
+            part for part in (_render_location(item) for item in value) if part
+        )
+    if not isinstance(value, dict):
+        return _clean_text(value)
+
+    address = value.get('address')
+    if address is not None:
+        rendered_address = _render_location(address)
+        if rendered_address:
+            return rendered_address
+
+    parts = [
+        _clean_text(value.get('addressLocality') or value.get('city')),
+        _clean_text(value.get('addressRegion') or value.get('region')),
+        _clean_text(value.get('postalCode')),
+        _render_country(
+            value.get('addressCountry')
+            or value.get('country')
+        ),
+    ]
+    rendered = ', '.join(part for part in parts if part)
+    if rendered:
+        return rendered
+
+    return _clean_text(value.get('name'))
+
+
+def _json_ld_locations(soup: BeautifulSoup) -> list[str]:
+    locations: list[str] = []
+    for script in soup.find_all('script', attrs={'type': re.compile('ld\+json', re.I)}):
+        raw = script.string or script.get_text('', strip=True)
+        if not raw:
+            continue
+        try:
+            payload = json.loads(raw)
+        except (TypeError, ValueError, json.JSONDecodeError):
+            continue
+
+        for posting in _walk_job_postings(payload):
+            job_location = _render_location(posting.get('jobLocation'))
+            if job_location:
+                locations.append(job_location)
+
+            applicant_location = _render_location(
+                posting.get('applicantLocationRequirements')
+            )
+            if applicant_location:
+                locations.append(applicant_location)
+
+    return _dedupe(locations)
+
+
+def _meta_locations(soup: BeautifulSoup) -> list[str]:
+    names = {
+        'job-location',
+        'job_location',
+        'joblocation',
+        'location',
+        'twitter:data1',
+    }
+    properties = {
+        'job:location',
+        'og:job_location',
+        'og:job-location',
+    }
+    values: list[str] = []
+    for meta in soup.find_all('meta'):
+        name = _clean_text(meta.get('name')).casefold()
+        prop = _clean_text(meta.get('property')).casefold()
+        if name in names or prop in properties:
+            content = _clean_text(meta.get('content'))
+            if content and len(content) <= 200:
+                values.append(content)
+    return _dedupe(values)
+
+
+def _dom_locations(root) -> list[str]:
+    values: list[str] = []
+    location_tokens = (
+        'job-location',
+        'job_location',
+        'joblocation',
+        'location-info',
+        'location_info',
+        'jobgeo',
+        'job-geo',
+    )
+
+    for node in root.find_all(True):
+        attributes = ' '.join(
+            [
+                _clean_text(node.get('id')),
+                _clean_text(' '.join(node.get('class', []))),
+                _clean_text(node.get('data-automation-id')),
+                _clean_text(node.get('data-testid')),
+            ]
+        ).casefold()
+        if not any(token in attributes for token in location_tokens):
+            continue
+        text = node.get_text(' ', strip=True)
+        if 2 <= len(text) <= 200:
+            values.append(text)
+        if len(values) >= 10:
+            break
+
+    labelled_text = root.get_text('\n', strip=True)
+    pattern = re.compile(
+        r'(?im)^\s*(?:job\s+location|primary\s+location|work\s+location|'
+        r'location|standort|arbeitsort|dienstort|einsatzort)\s*[:\-–—]\s*'
+        r'([^\n|•]{2,160})'
+    )
+    values.extend(match.group(1) for match in pattern.finditer(labelled_text))
+    return _dedupe(values)
+
+
+def _extract_location(soup: BeautifulSoup) -> str:
+    root = soup.find('main') or soup.body or soup
+    candidates = _dedupe(
+        _json_ld_locations(soup)
+        + _meta_locations(soup)
+        + _dom_locations(root)
+    )
+    return '; '.join(candidates[:6])
+
+
 def _job_from_page(url: str, response) -> dict:
     soup = BeautifulSoup(response.text, 'html.parser')
     h1 = soup.find('h1')
@@ -60,6 +244,7 @@ def _job_from_page(url: str, response) -> dict:
     return {
         'title': title[:300],
         'url': url,
+        'location': _extract_location(soup)[:1000],
         'description': description[:30000],
     }
 
