@@ -1,7 +1,32 @@
 import re
 
 
-WIFE_MATCH_POLICY_VERSION = "wife-local-a1-b1-v1"
+WIFE_MATCH_POLICY_VERSION = "wife-child-only-a1-b1-v2"
+
+# A matching job title is not enough by itself for generic pedagogical or
+# integration roles. At least one child/school context marker must also appear
+# in the title or vacancy description so adult-care roles do not leak through.
+CHILD_CONTEXT_TERMS = (
+    "kind",
+    "kinder",
+    "kindern",
+    "kita",
+    "kindergarten",
+    "kindertagesstätte",
+    "kindertagesstaette",
+    "kinderpfleger",
+    "schule",
+    "schüler",
+    "schueler",
+    "grundschule",
+    "schulbegleitung",
+    "schulbegleiter",
+    "schulassistenz",
+    "ogs",
+    "offene ganztagsschule",
+    "jugendliche",
+    "jugendhilfe",
+)
 
 
 def _normalise(value: str) -> str:
@@ -15,7 +40,7 @@ def _contains(text: str, term: str) -> bool:
     return re.search(r"(?<!\w)" + re.escape(term) + r"(?!\w)", text, flags=re.UNICODE) is not None
 
 
-def _matches(text: str, terms: list[str]) -> list[str]:
+def _matches(text: str, terms: list[str] | tuple[str, ...]) -> list[str]:
     return [term for term in terms if _contains(text, str(term))]
 
 
@@ -75,12 +100,14 @@ def analyse_language(description: str, config: dict) -> dict:
 def analyse_wife_job(title: str, description: str, config: dict) -> dict:
     title_text = _normalise(title)
     body_text = _normalise(description)
+    combined_text = f"{title_text} {body_text}"
     profile = config.get("profile", {})
 
     priority = _matches(title_text, profile.get("priority_titles", []))
     bridge = _matches(title_text, profile.get("bridge_titles", []))
     negatives = _matches(title_text, profile.get("negative_titles", []))
     positive_body = _matches(body_text, profile.get("positive_terms", []))
+    child_context = _matches(combined_text, CHILD_CONTEXT_TERMS)
     language = analyse_language(description, config)
 
     if negatives:
@@ -105,8 +132,7 @@ def analyse_wife_job(title: str, description: str, config: dict) -> dict:
             "gaps": [language["warning"]],
         }
 
-    # Only role families explicitly selected for this agent are allowed. This
-    # prevents the broad Quereinstieg search from flooding the family chat.
+    # Only role families explicitly selected for this agent are allowed.
     if not priority and not bridge:
         return {
             "exclude": True,
@@ -116,6 +142,19 @@ def analyse_wife_job(title: str, description: str, config: dict) -> dict:
             "matched": [],
             "language": language,
             "gaps": [],
+        }
+
+    # The family agent is child-only. Generic Erzieher/integration/pedagogical
+    # titles must be backed by explicit Kita, school, children or youth context.
+    if not child_context:
+        return {
+            "exclude": True,
+            "score": 0,
+            "tier": "X",
+            "category": "поза дитячим профілем",
+            "matched": priority + bridge,
+            "language": language,
+            "gaps": ["У вакансії не підтверджено роботу саме з дітьми або у школі/Kita."],
         }
 
     score = 0
@@ -161,13 +200,13 @@ def analyse_wife_job(title: str, description: str, config: dict) -> dict:
 
     if priority:
         tier = "A"
-        category = "пріоритетна вакансія"
+        category = "робота з дітьми"
     else:
         tier = "B"
-        category = "реалістичний запасний варіант"
+        category = "робота з дітьми — запасний варіант"
 
     matched = []
-    for term in priority + bridge + positive_body:
+    for term in priority + bridge + child_context + positive_body:
         if term not in matched:
             matched.append(term)
 
