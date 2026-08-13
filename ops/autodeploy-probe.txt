@@ -1,0 +1,3 @@
+Autodeploy end-to-end verification marker.
+Created: 2026-08-13
+This file has no runtime effect and exists only to confirm the CI -> production -> server deployment pipeline.
