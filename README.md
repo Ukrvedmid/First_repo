@@ -2,38 +2,27 @@
 
 Self-hosted vacancy monitor for a senior marine engineer moving toward a shore-based career in Germany while keeping relevant sea/offshore options open.
 
-## What it searches
+## Search policy
 
-The matching profile covers six career routes:
+The current matching policy is deliberately strict:
+
+- shore vacancies must be connected to shipping, ships, shipbuilding, ports, classification, subsea, offshore marine operations or marine equipment;
+- the job location must be explicitly confirmed as Germany, a German federal state or a recognised German city;
+- generic factory maintenance, automotive fleet, ordinary onshore wind, software and other non-maritime jobs are rejected;
+- vacancies in Spain, India, the UK, the Netherlands and other countries are rejected, including generic `Remote Europe` roles.
+
+The matching profile covers these career routes:
 
 1. Technical Superintendent / Technical Vessel Manager / Port Engineer.
 2. Marine Surveyor / Technical Inspector / Plan Approval Engineer.
 3. Marine OEM Field Service / Commissioning / Technical Support.
 4. Shipbuilding, retrofit, drydock and technical project roles.
-5. Offshore wind, maintenance, reliability, O&M and asset management.
-6. Chief Engineer, DP/offshore, subsea and ROV roles in parallel.
+5. Offshore wind with a clear SOV/CSOV or marine-operations connection.
+6. Relevant Chief Engineer, DP/offshore, subsea and ROV roles located in Germany.
 
-Current public sources include:
+Current public sources include the Bundesagentur für Arbeit, BSM, RINA, Lloyd's Register, Wärtsilä, Everllence, Kongsberg Maritime, Vestas, Siemens Energy, Boskalis, DOF, Subsea7 and additional maritime employers.
 
-- Bundesagentur für Arbeit Jobsuche
-- BSM Germany
-- Carnival Maritime Hamburg
-- DNV Germany
-- RINA Germany Marine
-- Lloyd's Register Germany
-- Hapag-Lloyd official career board
-- Wärtsilä Germany
-- Everllence Germany
-- Kongsberg Maritime
-- Vestas Germany
-- Siemens Energy Germany
-- Boskalis
-- DOF
-- Subsea7
-
-The agent searches English and German title variants, adds extra weight for relevant German locations, removes student/apprentice roles, detects closed vacancies, ranks matches, stores fingerprints in SQLite and suppresses duplicates.
-
-No crawler can guarantee every vacancy on the internet. This project monitors the configured public pages and does not bypass login pages, CAPTCHAs, robots restrictions or anti-bot controls.
+No crawler can guarantee every vacancy on the internet. This project monitors configured public pages and does not bypass login pages, CAPTCHAs, robots restrictions or anti-bot controls.
 
 ## First start
 
@@ -41,24 +30,6 @@ No crawler can guarantee every vacancy on the internet. This project monitors th
 cp .env.example .env
 docker compose up -d --build
 docker compose logs -f --tail=200 agent
-```
-
-## Update an existing installation
-
-```bash
-cd ~/job-agent
-git pull --ff-only
-docker compose up -d --build
-docker compose ps
-docker compose logs --tail=200 agent
-```
-
-## Run one diagnostic scan
-
-This runs one complete scan and exits instead of waiting 30 minutes:
-
-```bash
-docker compose run --rm -e RUN_ONCE=1 agent
 ```
 
 ## Telegram
@@ -80,9 +51,65 @@ A notification contains:
 
 - A/B/C relevance tier and numerical score;
 - career route;
-- detected German location;
+- confirmed German location;
 - matched experience terms;
 - source and direct vacancy link.
+
+## Safe automatic deployment
+
+The repository has two release stages:
+
+1. Changes are committed to `main`.
+2. GitHub Actions compiles the application, imports it, runs the test suite, validates YAML and checks deployment scripts.
+3. Only a successful `main` commit is fast-forwarded to `production`.
+4. The server timer checks `production` every five minutes.
+5. The server builds the candidate image, performs an import smoke test, starts it and verifies that the container stays healthy.
+6. A failed release is rolled back automatically and is not retried until a newer production commit exists.
+
+One-time installation on the server:
+
+```bash
+cd /home/ultbear/job-agent
+git checkout main
+git pull --ff-only
+sudo bash ops/install-autodeploy.sh
+```
+
+Useful diagnostics:
+
+```bash
+systemctl status job-agent-autodeploy.timer --no-pager
+systemctl status job-agent-autodeploy.service --no-pager
+journalctl -u job-agent-autodeploy.service -n 100 --no-pager
+systemctl list-timers job-agent-autodeploy.timer --no-pager
+```
+
+To force an immediate check:
+
+```bash
+sudo systemctl start job-agent-autodeploy.service
+```
+
+The `.env` file, Telegram token and SQLite Docker volume are not committed or removed during deployments.
+
+## Manual update
+
+Normally this is no longer required after automatic deployment is installed:
+
+```bash
+cd ~/job-agent
+git fetch origin production
+git checkout -B production origin/production
+docker compose up -d --build --force-recreate
+```
+
+## Run one diagnostic scan
+
+This runs one complete scan and exits instead of waiting 30 minutes:
+
+```bash
+docker compose run --rm -e RUN_ONCE=1 agent
+```
 
 ## Stop
 
