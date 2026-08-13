@@ -1,0 +1,39 @@
+name: Live vacancy diagnostic
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/live-diagnostic.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare non-secret environment
+        run: cp .env.example .env
+
+      - name: Build diagnostic image
+        run: docker compose build
+
+      - name: Run one live scan
+        run: |
+          set -o pipefail
+          timeout 1500 docker compose run --rm \
+            -e RUN_ONCE=1 \
+            -e JOB_SUMMARY_PROVIDER=fallback \
+            agent 2>&1 | tee live-diagnostic.log
+
+      - name: Print concise diagnostic summary
+        if: always()
+        run: |
+          echo "===== LIVE DIAGNOSTIC SUMMARY ====="
+          grep -E "\[INFO\] .*fetched [0-9]+ items|Germany-only location filter|new matching jobs|Ukrainian summary provider|\[ERROR\]|\[FATAL-SCAN\]" live-diagnostic.log 2>/dev/null | tail -n 160 || true
