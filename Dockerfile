@@ -11,6 +11,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app ./app
 COPY config.yaml .
+COPY wife_config.yaml .
 COPY extra_profile.yaml .
 COPY extra_sources.yaml .
 COPY source_overrides.yaml .
