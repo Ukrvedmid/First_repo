@@ -125,6 +125,7 @@ def fetch(source: dict, session, timeout: int, user_agent: str) -> list[dict]:
         jobs.append({
             'title': title[:300],
             'url': url,
+            'location': location[:1000],
             'description': description[:30000],
         })
 
