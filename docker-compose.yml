@@ -8,5 +8,18 @@ services:
       - ./config.yaml:/app/config.yaml:ro
       - agent_data:/data
 
+  wife-agent:
+    build: .
+    restart: unless-stopped
+    command: ["python", "-m", "app.wife_agent"]
+    env_file:
+      - .env
+    environment:
+      JOB_AGENT_DB_PATH: /data/wife-agent.db
+    volumes:
+      - ./wife_config.yaml:/app/wife_config.yaml:ro
+      - wife_agent_data:/data
+
 volumes:
   agent_data:
+  wife_agent_data:
