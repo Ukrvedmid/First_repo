@@ -2,7 +2,10 @@ import re
 from typing import Iterable
 
 
-LOCATION_POLICY_VERSION = "germany-only-v1"
+# v2 keeps the same strict Germany policy but intentionally invalidates prior
+# seen-job fingerprints after the Telegram delivery reliability fix. This makes
+# previously matched Germany vacancies eligible for one safe re-delivery.
+LOCATION_POLICY_VERSION = "germany-only-v2"
 
 GERMANY_COUNTRY_TERMS = [
     "germany",
