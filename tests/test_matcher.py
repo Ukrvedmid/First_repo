@@ -9,6 +9,8 @@ TEST_CONFIG = {
             "technical superintendent",
             "field service engineer",
             "project manager",
+            "maintenance engineer",
+            "fleet manager",
             "schiffbau-ingenieur",
         ],
         "strong": [
@@ -21,6 +23,7 @@ TEST_CONFIG = {
             "offshore wind",
             "schiffbau",
             "inbetriebnahme",
+            "power generation",
         ],
         "bridge": ["servicetechniker"],
         "weak": ["marine", "offshore", "technical", "engineering"],
@@ -101,7 +104,77 @@ class MatcherTests(unittest.TestCase):
             "Lead a consumer software product team and mobile application roadmap.",
             TEST_CONFIG,
         )
-        self.assertLess(result["score"], TEST_CONFIG["minimum_score"])
+        self.assertTrue(result["exclude"])
+        self.assertEqual(result["score"], 0)
+        self.assertEqual(result["tier"], "X — не морская тематика")
+
+    def test_generic_industrial_service_engineer_is_excluded(self):
+        result = analyse_job(
+            "Field Service Engineer",
+            "Commission diesel engines and power generation equipment at "
+            "land-based industrial plants in Germany.",
+            TEST_CONFIG,
+        )
+        self.assertTrue(result["exclude"])
+        self.assertEqual(result["score"], 0)
+        self.assertEqual(result["route"], "Не морская тематика")
+
+    def test_generic_factory_maintenance_is_excluded(self):
+        result = analyse_job(
+            "Maintenance Engineer",
+            "Maintain packaging machinery and production lines at a food factory.",
+            TEST_CONFIG,
+        )
+        self.assertTrue(result["exclude"])
+        self.assertEqual(result["tier"], "X — не морская тематика")
+
+    def test_automotive_fleet_manager_is_excluded(self):
+        result = analyse_job(
+            "Fleet Manager",
+            "Manage a fleet of delivery vans and company cars.",
+            TEST_CONFIG,
+        )
+        self.assertTrue(result["exclude"])
+        self.assertEqual(result["score"], 0)
+
+    def test_generic_title_with_shipyard_context_is_included(self):
+        result = analyse_job(
+            "Project Manager",
+            "Lead shipyard retrofit projects for offshore vessels and "
+            "coordinate drydock work and sea trials.",
+            TEST_CONFIG,
+        )
+        self.assertFalse(result["exclude"])
+        self.assertGreaterEqual(result["score"], TEST_CONFIG["minimum_score"])
+        self.assertIn("shipbuilding", result["route"])
+
+    def test_offshore_wind_and_sov_role_is_included(self):
+        result = analyse_job(
+            "Operations Manager Offshore Wind",
+            "Manage SOV-based offshore wind operations in the North Sea.",
+            TEST_CONFIG,
+        )
+        self.assertFalse(result["exclude"])
+        self.assertGreaterEqual(result["score"], TEST_CONFIG["minimum_score"])
+        self.assertIn("offshore wind", result["route"])
+
+    def test_onshore_wind_role_is_excluded(self):
+        result = analyse_job(
+            "Wind Turbine Service Engineer",
+            "Service onshore wind turbines across southern Germany.",
+            TEST_CONFIG,
+        )
+        self.assertTrue(result["exclude"])
+        self.assertEqual(result["score"], 0)
+
+    def test_land_based_chief_engineer_is_excluded(self):
+        result = analyse_job(
+            "Chief Engineer",
+            "Lead maintenance at a land-based combined-cycle power plant.",
+            TEST_CONFIG,
+        )
+        self.assertTrue(result["exclude"])
+        self.assertEqual(result["tier"], "X — не морская тематика")
 
     def test_student_role_is_excluded_by_title(self):
         result = analyse_job(
