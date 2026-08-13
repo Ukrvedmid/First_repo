@@ -1,0 +1,27 @@
+[Unit]
+Description=Job Agent tested-release auto-deployment
+Wants=network-online.target
+After=network-online.target docker.service
+Requires=docker.service
+ConditionPathExists=/home/ultbear/job-agent/.git
+ConditionPathExists=/home/ultbear/job-agent/.env
+
+[Service]
+Type=oneshot
+User=root
+Group=root
+WorkingDirectory=/home/ultbear/job-agent
+ExecStart=/usr/bin/env bash /home/ultbear/job-agent/ops/job-agent-autodeploy.sh
+TimeoutStartSec=20min
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+
+[Install]
+WantedBy=multi-user.target
