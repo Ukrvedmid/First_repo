@@ -17,7 +17,9 @@ Nice=10
 IOSchedulingClass=best-effort
 IOSchedulingPriority=7
 UMask=0077
-NoNewPrivileges=true
+# The deploy runner must temporarily drop from root to the application user for
+# Git operations. NoNewPrivileges=true blocks that UID transition under runuser.
+NoNewPrivileges=false
 PrivateTmp=true
 ProtectKernelTunables=true
 ProtectKernelModules=true
