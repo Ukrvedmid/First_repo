@@ -3,7 +3,8 @@
 
 The token is requested with hidden input, validated against Telegram, and stored
 only in the local .env file. The script discovers groups/supergroups from recent
-Bot API updates, preserves all existing .env settings, and sends a test message.
+Bot API updates, preserves all existing .env settings, sends a test message and
+tries to restart only the wife-agent container so the new secrets are loaded.
 """
 
 from __future__ import annotations
@@ -11,6 +12,7 @@ from __future__ import annotations
 import getpass
 import json
 import os
+import subprocess
 import sys
 import urllib.error
 import urllib.parse
@@ -18,7 +20,8 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
-ENV_PATH = Path("/home/ultbear/job-agent/.env")
+REPO_DIR = Path("/home/ultbear/job-agent")
+ENV_PATH = REPO_DIR / ".env"
 API_TIMEOUT_SECONDS = 25
 
 
@@ -32,7 +35,7 @@ def api_call(token: str, method: str, params: dict[str, Any] | None = None) -> A
     request = urllib.request.Request(
         url,
         data=encoded,
-        headers={"User-Agent": "JobAgentWifeBotSetup/1.0"},
+        headers={"User-Agent": "JobAgentWifeBotSetup/1.1"},
         method="POST",
     )
     try:
@@ -136,6 +139,31 @@ def update_env(path: Path, values: dict[str, str]) -> None:
     os.chmod(path, 0o600)
 
 
+def restart_wife_agent() -> bool:
+    try:
+        completed = subprocess.run(
+            ["docker", "compose", "up", "-d", "--build", "--force-recreate", "wife-agent"],
+            cwd=REPO_DIR,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            timeout=240,
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        print(f"Автоперезапуск wife-agent не выполнен: {exc}")
+        return False
+
+    if completed.returncode == 0:
+        print("wife-agent перезапущен и получил новые Telegram-настройки.")
+        return True
+
+    print("Не удалось автоматически перезапустить wife-agent.")
+    print("Выполните отдельно:")
+    print("  cd /home/ultbear/job-agent && sudo docker compose up -d --build --force-recreate wife-agent")
+    return False
+
+
 def main() -> int:
     print("Подключение второго Telegram-бота для вакансий жены.")
     token = getpass.getpass("Вставьте токен второго бота: ").strip()
@@ -186,8 +214,8 @@ def main() -> int:
             {
                 "chat_id": str(chat["id"]),
                 "text": (
-                    "✅ Бот вакансий Лилии подключён.\n"
-                    "Следующий этап — отдельный поиск вакансий и украинский разбор объявлений."
+                    "✅ Family Job Agent подключён.\n"
+                    "Пошук: Minden + 15 км, вакансії з німецькою не вище B1."
                 ),
                 "disable_web_page_preview": "true",
             },
@@ -202,6 +230,7 @@ def main() -> int:
     print(f"Группа: {chat['title']}")
     print(f"Chat ID: {chat['id']}")
     print(f"Настройки сохранены в {ENV_PATH} с правами 600.")
+    restart_wife_agent()
     return 0
 
 
