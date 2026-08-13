@@ -64,27 +64,80 @@ git_as_app_user() {
     runuser -u "${APP_USER}" -- git -C "${REPO_DIR}" "$@"
 }
 
+container_id() {
+    docker compose -f "${REPO_DIR}/docker-compose.yml" \
+        --project-directory "${REPO_DIR}" ps -q "${SERVICE_NAME}" 2>/dev/null || true
+}
+
 container_is_running() {
-    local container_id status
-    container_id="$(docker compose -f "${REPO_DIR}/docker-compose.yml" \
-        --project-directory "${REPO_DIR}" ps -q "${SERVICE_NAME}" 2>/dev/null || true)"
-    [[ -n "${container_id}" ]] || return 1
-    status="$(docker inspect -f '{{.State.Status}}' "${container_id}" 2>/dev/null || true)"
+    local cid status
+    cid="$(container_id)"
+    [[ -n "${cid}" ]] || return 1
+    status="$(docker inspect -f '{{.State.Status}}' "${cid}" 2>/dev/null || true)"
     [[ "${status}" == "running" ]]
 }
 
+compose_logs() {
+    docker compose -f "${REPO_DIR}/docker-compose.yml" \
+        --project-directory "${REPO_DIR}" logs "$@" "${SERVICE_NAME}" 2>&1 || true
+}
+
+maybe_send_health_status() {
+    local force="${1:-0}"
+    local now last hours interval cid status restarts logs latest_scan latest_filter latest_matches provider errors commit
+    now="$(date +%s)"
+    last="$(cat "${STATE_DIR}/last_health_heartbeat_epoch" 2>/dev/null || echo 0)"
+    hours="$(read_env_value JOB_HEALTH_HEARTBEAT_HOURS)"
+    if ! [[ "${hours}" =~ ^[0-9]+([.][0-9]+)?$ ]]; then
+        hours="6"
+    fi
+    interval="$(awk -v h="${hours}" 'BEGIN { printf "%d", h * 3600 }')"
+    if (( interval < 1800 )); then
+        interval=1800
+    fi
+
+    if [[ "${force}" != "1" ]] && (( now - last < interval )); then
+        return 0
+    fi
+
+    cid="$(container_id)"
+    if [[ -z "${cid}" ]]; then
+        notify_telegram "🔴 Job Agent: контейнер не знайдено. Автодеплой спробує відновити сервіс."
+        printf '%s\n' "${now}" > "${STATE_DIR}/last_health_heartbeat_epoch"
+        return 0
+    fi
+
+    status="$(docker inspect -f '{{.State.Status}}' "${cid}" 2>/dev/null || echo unknown)"
+    restarts="$(docker inspect -f '{{.RestartCount}}' "${cid}" 2>/dev/null || echo unknown)"
+    logs="$(compose_logs --since=12h)"
+    latest_scan="$(printf '%s\n' "${logs}" | grep -F '[INFO] scan started' | tail -n 1 | sed -E 's/^.*\[INFO\] /[INFO] /' || true)"
+    latest_filter="$(printf '%s\n' "${logs}" | grep -F 'Germany-only location filter:' | tail -n 1 | sed -E 's/^.*\[INFO\] /[INFO] /' || true)"
+    latest_matches="$(printf '%s\n' "${logs}" | grep -F 'new matching jobs:' | tail -n 1 | sed -E 's/^.*\[INFO\] /[INFO] /' || true)"
+    provider="$(printf '%s\n' "${logs}" | grep -F 'Ukrainian summary provider:' | tail -n 1 | sed -E 's/^.*\[INFO\] /[INFO] /' || true)"
+    errors="$(printf '%s\n' "${logs}" | grep -E '\[ERROR\]|\[FATAL-SCAN\]' | tail -n 3 | sed -E 's/^.*(\[ERROR\]|\[FATAL-SCAN\]) /\1 /' || true)"
+    commit="$(git_as_app_user rev-parse --short=12 HEAD 2>/dev/null || echo unknown)"
+
+    if [[ -z "${latest_scan}" ]]; then latest_scan="[INFO] scan started: за останні 12 годин не знайдено"; fi
+    if [[ -z "${latest_filter}" ]]; then latest_filter="[INFO] Germany filter: даних за останні 12 годин немає"; fi
+    if [[ -z "${latest_matches}" ]]; then latest_matches="[INFO] new matching jobs: даних за останні 12 годин немає"; fi
+    if [[ -z "${provider}" ]]; then provider="[INFO] Ukrainian summary provider: не визначено"; fi
+    if [[ -z "${errors}" ]]; then errors="немає FATAL/notification errors у логах за 12 годин"; fi
+
+    notify_telegram "🟢 Job Agent status\nКонтейнер: ${status}, рестарти: ${restarts}\nВерсія: ${commit}\n${latest_scan}\n${latest_filter}\n${latest_matches}\n${provider}\nПомилки: ${errors}"
+    printf '%s\n' "${now}" > "${STATE_DIR}/last_health_heartbeat_epoch"
+}
+
 container_is_healthy() {
-    local container_id status restart_count fatal_line
-    container_id="$(docker compose -f "${REPO_DIR}/docker-compose.yml" \
-        --project-directory "${REPO_DIR}" ps -q "${SERVICE_NAME}")"
-    if [[ -z "${container_id}" ]]; then
+    local cid status restart_count fatal_line
+    cid="$(container_id)"
+    if [[ -z "${cid}" ]]; then
         log "Health check failed: no container ID for service ${SERVICE_NAME}."
         return 1
     fi
 
     sleep "${HEALTH_WAIT_SECONDS}"
-    status="$(docker inspect -f '{{.State.Status}}' "${container_id}" 2>/dev/null || true)"
-    restart_count="$(docker inspect -f '{{.RestartCount}}' "${container_id}" 2>/dev/null || echo 999)"
+    status="$(docker inspect -f '{{.State.Status}}' "${cid}" 2>/dev/null || true)"
+    restart_count="$(docker inspect -f '{{.RestartCount}}' "${cid}" 2>/dev/null || echo 999)"
 
     if [[ "${status}" != "running" ]]; then
         log "Health check failed: container status is ${status:-unknown}."
@@ -95,9 +148,7 @@ container_is_healthy() {
         return 1
     fi
 
-    fatal_line="$(docker compose -f "${REPO_DIR}/docker-compose.yml" \
-        --project-directory "${REPO_DIR}" logs --since="${HEALTH_WAIT_SECONDS}s" \
-        "${SERVICE_NAME}" 2>&1 \
+    fatal_line="$(compose_logs --since="${HEALTH_WAIT_SECONDS}s" \
         | grep -E 'Traceback|ImportError|ModuleNotFoundError|\[FATAL-SCAN\]' \
         | tail -n 1 || true)"
     if [[ -n "${fatal_line}" ]]; then
@@ -177,10 +228,12 @@ deployed_commit="$(cat "${STATE_DIR}/deployed_commit" 2>/dev/null || true)"
 if [[ "${current_commit}" == "${target_commit}" \
       && "${deployed_commit}" == "${target_commit}" ]] \
       && container_is_running; then
+    maybe_send_health_status 0
     exit 0
 fi
 if [[ -n "${failed_commit}" && "${target_commit}" == "${failed_commit}" ]]; then
     log "Skipping previously failed release ${target_commit:0:12}; waiting for a newer production commit."
+    maybe_send_health_status 0
     exit 0
 fi
 
@@ -212,7 +265,7 @@ fi
 if ! docker compose -f "${REPO_DIR}/docker-compose.yml" \
     --project-directory "${REPO_DIR}" run --rm --no-deps \
     --entrypoint python "${SERVICE_NAME}" \
-    -c 'import app.main; import app.matcher; import app.location; import app.notify'; then
+    -c 'import app.main; import app.matcher; import app.location; import app.notify; import app.summarizer'; then
     rollback_release "${previous_commit}" "${target_commit}" "application import smoke test failed"
 fi
 
@@ -230,6 +283,7 @@ rm -f "${STATE_DIR}/failed_commit"
 printf '%s\n' "${target_commit}" > "${STATE_DIR}/deployed_commit"
 log "Deployment successful: ${target_commit:0:12}."
 notify_telegram "✅ Job Agent автоматически обновлён до ${target_commit:0:12}. ${commit_subject}"
+maybe_send_health_status 1
 
 # Remove only old, unused images. Named volumes and the vacancy database are not touched.
 docker image prune -f --filter 'until=168h' >/dev/null 2>&1 || true
