@@ -1,0 +1,31 @@
+name: Promote tested main to production
+
+on:
+  workflow_run:
+    workflows: ["Job agent checks"]
+    types: [completed]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: job-agent-production-promotion
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_branch == 'main' &&
+      github.event.workflow_run.repository.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the exact tested commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+
+      - name: Fast-forward production to the tested commit
+        run: git push origin HEAD:refs/heads/production
