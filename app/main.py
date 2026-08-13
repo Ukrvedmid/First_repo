@@ -9,6 +9,7 @@ import requests
 import yaml
 
 from app.db import has_seen, mark_seen
+from app.location import LOCATION_POLICY_VERSION, analyse_germany_location
 from app.matcher import analyse_job
 from app.notify import send_telegram, telegram_enabled
 from app.sources import crawl as crawl_source
@@ -89,6 +90,7 @@ def matching_signature(config: dict) -> str:
         'keywords': config.get('keywords', {}),
         'priority_locations': config.get('priority_locations', []),
         'minimum_score': config.get('minimum_score', 1),
+        'location_policy': LOCATION_POLICY_VERSION,
     }
     payload = yaml.safe_dump(relevant, allow_unicode=True, sort_keys=True)
     profile_signature = hashlib.sha256(payload.encode('utf-8')).hexdigest()[:16]
@@ -126,7 +128,9 @@ def fetch_source(source, session, config):
 
 def _message_for_match(item: dict) -> str:
     analysis = item['analysis']
-    locations = ', '.join(analysis['locations'][:4]) or 'не определено'
+    locations = item.get('location') or (
+        ', '.join(analysis['locations'][:4]) or 'не определено'
+    )
     matched = ', '.join(analysis['matched'][:10]) or '-'
     gaps = '; '.join(analysis.get('potential_gaps', [])[:5]) or 'автоматически не обнаружены'
     recommendation = analysis.get('recommendation', 'Проверить вручную')
@@ -136,7 +140,8 @@ def _message_for_match(item: dict) -> str:
         f"Решение: {recommendation}\n\n"
         f"{html.unescape(item['title'])}\n\n"
         f"Маршрут: {analysis['route']}\n"
-        f"География: {locations}\n"
+        f"Локация: {locations}\n"
+        f"Фильтр страны: только Германия ✅\n"
         f"Почему подходит: {matched}\n"
         f"Возможные пробелы: {gaps}\n"
         f"Источник: {item['source']}\n\n"
@@ -150,6 +155,8 @@ def run_once():
     match_signature = matching_signature(config)
     pending: list[dict] = []
     pending_fingerprints: set[str] = set()
+    germany_confirmed = 0
+    location_rejected = 0
 
     with requests.Session() as session:
         for source in config.get('sources', []):
@@ -168,6 +175,7 @@ def run_once():
             for job in jobs:
                 title = job.get('title', '').strip()
                 url = job.get('url', '').strip()
+                location = job.get('location', '').strip()
                 description = job.get('description', '')
                 if not title or not url:
                     continue
@@ -176,8 +184,19 @@ def run_once():
                 if fp in pending_fingerprints or has_seen(fp):
                     continue
 
-                analysis = analyse_job(title, description, config)
                 now = datetime.now(timezone.utc).isoformat()
+                location_result = analyse_germany_location(
+                    title,
+                    description,
+                    location,
+                )
+                if not location_result['eligible']:
+                    location_rejected += 1
+                    mark_seen(fp, name, title, url, now)
+                    continue
+
+                germany_confirmed += 1
+                analysis = analyse_job(title, description, config)
 
                 if analysis['score'] < minimum_score or analysis.get('exclude', False):
                     mark_seen(fp, name, title, url, now)
@@ -190,6 +209,7 @@ def run_once():
                     'source': name,
                     'title': title,
                     'url': url,
+                    'location': location_result['display'],
                     'analysis': analysis,
                 })
 
@@ -201,6 +221,11 @@ def run_once():
         reverse=True,
     )
 
+    print(
+        '[INFO] Germany-only location filter: '
+        f'confirmed {germany_confirmed}, rejected {location_rejected}',
+        flush=True,
+    )
     print(f'[INFO] new matching jobs: {len(pending)}', flush=True)
     delay = float(config.get('notification_delay_seconds', 1.1))
 
