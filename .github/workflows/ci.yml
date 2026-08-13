@@ -34,6 +34,9 @@ jobs:
       - name: Run tests
         run: python -m unittest discover -s tests -v
 
+      - name: Validate deployment shell scripts
+        run: bash -n ops/job-agent-autodeploy.sh ops/install-autodeploy.sh
+
       - name: Validate YAML
         run: |
           python - <<'PY'
