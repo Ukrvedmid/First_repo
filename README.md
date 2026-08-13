@@ -50,10 +50,43 @@ docker compose up -d
 A notification contains:
 
 - A/B/C relevance tier and numerical score;
-- career route;
-- confirmed German location;
-- matched experience terms;
-- source and direct vacancy link.
+- confirmed German location and career route;
+- a short Ukrainian explanation of what the vacancy is about;
+- Ukrainian bullet lists with the main duties, key requirements and stated working conditions;
+- matched experience terms, possible gaps, source and direct vacancy link.
+
+## Ukrainian vacancy summaries
+
+Only vacancies that pass both the Germany-only filter and the maritime relevance filter are summarised. The agent does not spend summarisation resources on rejected jobs.
+
+The summary system has two modes:
+
+### Built-in fallback — enabled automatically
+
+No additional key is required. The agent analyses the job title, route and description, recognises common marine responsibilities and requirements, and generates a compact Ukrainian summary. This mode is deterministic and free, but less detailed than an LLM-generated summary.
+
+### OpenAI summary — optional
+
+When an OpenAI API key is present, the agent sends only the matched vacancy text to the Responses API and asks for a structured Ukrainian summary. Results are cached in SQLite, so the same unchanged vacancy is not summarised repeatedly.
+
+Add to `.env`:
+
+```env
+JOB_SUMMARY_PROVIDER=auto
+OPENAI_API_KEY=...
+OPENAI_MODEL=gpt-5-nano
+OPENAI_BASE_URL=https://api.openai.com/v1
+JOB_SUMMARY_TIMEOUT_SECONDS=45
+JOB_SUMMARY_MAX_INPUT_CHARS=18000
+```
+
+`JOB_SUMMARY_PROVIDER` values:
+
+- `auto` — use OpenAI when a key is configured, otherwise use the built-in fallback;
+- `openai` — request OpenAI summaries, falling back safely when the key is absent or the request fails;
+- `fallback` — never call an external summary API.
+
+The OpenAI request uses `store: false`, strict JSON schema output, a bounded vacancy-text length and a low-cost model configurable through `OPENAI_MODEL`. API use requires a separately configured OpenAI API key and API billing.
 
 ## Safe automatic deployment
 
@@ -90,7 +123,7 @@ To force an immediate check:
 sudo systemctl start job-agent-autodeploy.service
 ```
 
-The `.env` file, Telegram token and SQLite Docker volume are not committed or removed during deployments.
+The `.env` file, Telegram token, optional OpenAI key and SQLite Docker volume are not committed or removed during deployments.
 
 ## Manual update
 
@@ -119,6 +152,6 @@ docker compose down
 
 ## Data
 
-Seen vacancy fingerprints are stored in the Docker volume `agent_data` as SQLite database `/data/agent.db`.
+Seen vacancy fingerprints and generated summaries are stored in the Docker volume `agent_data` as SQLite database `/data/agent.db`.
 
-The matching signature changes automatically after profile edits. That causes still-open vacancies to be re-analysed under the new profile without creating normal recurring duplicates.
+The matching signature changes automatically after profile, location or summary-policy edits. That causes still-open vacancies to be re-analysed under the new policy without creating normal recurring duplicates.
