@@ -159,6 +159,11 @@ if ! docker compose version >/dev/null 2>&1; then
     exit 1
 fi
 
+# Executable bits are not part of the deployment contract because systemd runs
+# this file through bash. Ignoring mode-only differences prevents chmod or mount
+# semantics from creating a false dirty-worktree condition.
+git_as_app_user config core.fileMode false
+
 if ! git_as_app_user fetch --prune origin "${DEPLOY_BRANCH}"; then
     log "Could not fetch origin/${DEPLOY_BRANCH}."
     exit 1
@@ -180,8 +185,9 @@ if [[ -n "${failed_commit}" && "${target_commit}" == "${failed_commit}" ]]; then
 fi
 
 if ! git_as_app_user diff --quiet || ! git_as_app_user diff --cached --quiet; then
-    log "Tracked local changes detected. Automatic deployment was blocked to avoid data loss."
-    notify_telegram "⚠️ Job Agent: автодеплой заблокирован — в репозитории есть локальные изменения отслеживаемых файлов."
+    dirty_files="$(git_as_app_user status --short | head -n 20 | tr '\n' '; ')"
+    log "Tracked local changes detected. Automatic deployment was blocked to avoid data loss. Files: ${dirty_files:-unknown}."
+    notify_telegram "⚠️ Job Agent: автодеплой заблокирован — в репозитории есть локальные изменения отслеживаемых файлов: ${dirty_files:-не определены}."
     exit 1
 fi
 
