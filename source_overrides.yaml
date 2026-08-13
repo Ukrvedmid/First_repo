@@ -21,3 +21,27 @@ sources:
     type: "workable"
     enabled: true
     account: "dof"
+
+  # High-value German searches for shore-based service of marine machinery and
+  # shipboard equipment: commissioning, field service, maintenance and support.
+  - name: "Bundesagentur Marine Service Commissioning"
+    type: "crawl"
+    enabled: true
+    start_urls:
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Commissioning%20Engineer%20Marine"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Field%20Service%20Engineer%20Marine"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Service%20Engineer%20Marine"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Technical%20Support%20Marine"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Marine%20Maintenance%20Engineer"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Inbetriebnahmeingenieur%20Schiff"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Serviceingenieur%20Schiff"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Servicetechniker%20Schiff"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Instandhaltungsingenieur%20Schiff"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Schiffsmotor%20Service"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Schiffsantrieb%20Service"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Schiffsausr%C3%BCstung%20Service"
+    allowed_domains: ["arbeitsagentur.de"]
+    follow_url_contains: ["/jobsuche/suche?"]
+    job_url_contains: ["/jobsuche/jobdetail/"]
+    max_pages: 420
+    max_jobs: 800
