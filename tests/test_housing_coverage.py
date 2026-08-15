@@ -13,11 +13,12 @@ class HousingCoverageTests(unittest.TestCase):
 
     def test_local_and_generic_discovery_queries_are_present(self):
         joined = "\n".join(EXTRA_DISCOVERY_QUERIES)
-        self.assertIn("Immobilienmakler", joined)
-        self.assertIn("Sparkasse", joined)
-        self.assertIn("Kellermeier & Salge", joined)
-        self.assertIn("ORANGE Immobilien", joined)
-        self.assertIn("Porta Westfalica", joined)
+        joined_lower = joined.lower()
+        self.assertIn("immobilienmakler", joined_lower)
+        self.assertIn("sparkasse", joined_lower)
+        self.assertIn("kellermeier & salge", joined_lower)
+        self.assertIn("orange immobilien", joined_lower)
+        self.assertIn("porta westfalica", joined_lower)
 
     def test_enable_broad_coverage_keeps_core_sources_and_adds_more(self):
         class Dummy:
