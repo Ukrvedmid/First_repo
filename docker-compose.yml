@@ -34,6 +34,20 @@ services:
     volumes:
       - /home/ultbear/minden-radar/data:/data
 
+  minden-housing-sale:
+    build: .
+    restart: unless-stopped
+    command: ["python", "-m", "app.housing_sale_entrypoint"]
+    env_file:
+      - /home/ultbear/minden-radar/.env
+    environment:
+      RADAR_HOME_CITY: Minden
+      HOUSING_SALE_RADIUS_KM: "10"
+      HOUSING_SALE_DB_PATH: /data/housing-sale.db
+      HOUSING_SALE_SCAN_INTERVAL_SECONDS: "1800"
+    volumes:
+      - /home/ultbear/minden-radar/data:/data
+
 volumes:
   agent_data:
   wife_agent_data:
