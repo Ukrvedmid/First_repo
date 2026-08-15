@@ -18,8 +18,13 @@ def _copy_first(target: str, *sources: str) -> None:
 _copy_first("TELEGRAM_BOT_TOKEN", "TELEGRAM_TOKEN", "TG_BOT_TOKEN", "BOT_TOKEN")
 _copy_first("TELEGRAM_CHAT_ID", "TG_CHAT_ID", "CHAT_ID")
 
-from app.housing_agent import main  # noqa: E402  (env aliases must be set first)
+from app import housing_agent  # noqa: E402  (env aliases must be set first)
+from app.housing_coverage import enable_broad_coverage  # noqa: E402
+
+# Kleinanzeigen is only one source. Add further public portals plus broad web
+# discovery for smaller/local property sites and estate agents.
+enable_broad_coverage(housing_agent)
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(housing_agent.main())
