@@ -23,7 +23,7 @@ services:
   minden-housing:
     build: .
     restart: unless-stopped
-    command: ["python", "-m", "app.housing_agent"]
+    command: ["python", "-m", "app.housing_entrypoint"]
     env_file:
       - /home/ultbear/minden-radar/.env
     environment:
