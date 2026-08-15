@@ -55,14 +55,14 @@ class WifeAgentPolicyTests(unittest.TestCase):
         self.assertTrue(result["exclude"])
         self.assertEqual(result["category"], "німецька вище B1")
 
-    def test_backup_local_helper_job_is_included(self):
+    def test_non_child_helper_job_is_rejected(self):
         result = analyse_wife_job(
             "Reinigungskraft",
             "Quereinstieg möglich. Einfache Deutschkenntnisse. Teilzeit.",
             CONFIG,
         )
-        self.assertFalse(result["exclude"])
-        self.assertEqual(result["tier"], "B")
+        self.assertTrue(result["exclude"])
+        self.assertEqual(result["category"], "поза дитячим профілем")
 
     def test_unrelated_quereinstieg_job_is_rejected(self):
         result = analyse_wife_job(
