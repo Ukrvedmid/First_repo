@@ -20,6 +20,20 @@ services:
       - ./wife_config.yaml:/app/wife_config.yaml:ro
       - wife_agent_data:/data
 
+  minden-housing:
+    build: .
+    restart: unless-stopped
+    command: ["python", "-m", "app.housing_agent"]
+    env_file:
+      - /home/ultbear/minden-radar/.env
+    environment:
+      RADAR_HOME_CITY: Minden
+      RADAR_RADIUS_KM: "15"
+      HOUSING_DB_PATH: /data/housing.db
+      HOUSING_SCAN_INTERVAL_SECONDS: "1800"
+    volumes:
+      - /home/ultbear/minden-radar/data:/data
+
 volumes:
   agent_data:
   wife_agent_data:
