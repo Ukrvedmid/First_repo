@@ -97,7 +97,7 @@ def _message(item: dict, summary: dict) -> str:
         f"📌 {_trim(html.unescape(item['title']), 260)}",
         f"📍 {_trim(item['location'], 240)}",
         f"🗣 Німецька: {language.get('level', 'не вказано')}",
-        '📏 Пошук: Minden + до 15 км',
+        '📏 Пошук: Minden + до 20 км',
         '',
         '📝 Коротко про вакансію:',
         _trim(summary.get('overview', ''), 560),

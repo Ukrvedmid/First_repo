@@ -1,67 +1,80 @@
 interval_minutes: 30
 request_timeout_seconds: 25
-user_agent: "MindenFamilyJobAgent/1.0"
+user_agent: "MindenFamilyJobAgent/1.1"
 minimum_score: 5
 
 profile:
   center: "Minden, Nordrhein-Westfalen"
-  radius_km: 15
+  radius_km: 20
   german_min: "A1"
   german_max: "B1"
 
-  # Main direction: childcare, integration/support and everyday assistance.
+  # Only jobs involving work with children: Kita, Kindergarten, school support,
+  # inclusion/integration assistance and closely related pedagogical roles.
   priority_titles:
+    - "erzieher"
+    - "erzieherin"
+    - "pädagogische fachkraft"
+    - "pädagogischer mitarbeiter"
+    - "pädagogische mitarbeiterin"
+    - "pädagogische ergänzungskraft"
+    - "pädagogischer helfer"
+    - "pädagogische hilfskraft"
+    - "kinderpfleger"
+    - "kinderpflegerin"
+    - "sozialpädagogische assistenz"
+    - "sozialpädagogischer assistent"
+    - "sozialpädagogische assistentin"
     - "kita helfer"
     - "kita-helfer"
     - "kita assistenz"
     - "kita-assistenz"
-    - "pädagogische hilfskraft"
-    - "pädagogischer helfer"
-    - "integrationskraft"
-    - "integrationsbegleitung"
-    - "integrationsbegleiter"
-    - "schulbegleitung"
-    - "schulbegleiter"
-    - "teilhabeassistenz"
-    - "teilhabebegleitung"
-    - "betreuungskraft"
-    - "betreuungshelfer"
-    - "alltagsbegleiter"
-    - "alltagsbegleitung"
-    - "sozialassistent"
-    - "hauswirtschaftskraft kita"
-    - "hauswirtschaftskraft kindergarten"
-    - "küchenhilfe kita"
-    - "küchenhilfe kindergarten"
+    - "kindergarten helfer"
+    - "kindergartenhelfer"
+    - "alltagshelfer kita"
+    - "kita alltagshelfer"
     - "quereinsteiger kita"
     - "quereinsteiger kindergarten"
+    - "schulbegleitung"
+    - "schulbegleiter"
+    - "schulbegleiterin"
+    - "schulassistenz"
+    - "schulassistent"
+    - "schulassistentin"
+    - "integrationskraft"
+    - "integrationshelfer"
+    - "integrationshelferin"
+    - "integrationsbegleitung"
+    - "integrationsbegleiter"
+    - "inklusionsassistenz"
+    - "inklusionshelfer"
+    - "teilhabeassistenz"
+    - "teilhabebegleitung"
+    - "ogs betreuung"
+    - "ogs-betreuung"
+    - "ogs mitarbeiter"
+    - "ogs-mitarbeiter"
+    - "betreuungskraft schule"
+    - "betreuungskraft kita"
 
-  # Realistic backup routes for A1-B1 German in the local area.
-  bridge_titles:
-    - "hauswirtschaftskraft"
-    - "hauswirtschaftshilfe"
-    - "pflegehilfskraft"
-    - "pflegehelfer"
-    - "küchenhilfe"
-    - "spülkraft"
-    - "reinigungskraft"
-    - "reinigungsmitarbeiter"
-    - "lagerhelfer"
-    - "lagermitarbeiter"
-    - "kommissionierer"
-    - "verpacker"
-    - "verpackungsmitarbeiter"
-    - "produktionshelfer"
-    - "produktionsmitarbeiter"
-    - "mitarbeiter wäscherei"
-    - "wäschereimitarbeiter"
-    - "servicekraft"
-    - "verkaufshilfe"
-    - "aushilfe verkauf"
-    - "bürohilfe"
-    - "büroassistenz"
+  # No adult-care, cleaning, warehouse, kitchen, production or retail fallback jobs.
+  bridge_titles: []
 
   positive_terms:
+    - "kita"
+    - "kindergarten"
+    - "kinder"
+    - "kind"
+    - "schule"
+    - "grundschule"
+    - "ogs"
+    - "schulbegleitung"
+    - "pädagogisch"
+    - "erzieher"
+    - "betreuung von kindern"
+    - "integration"
+    - "inklusion"
+    - "teilhabe"
     - "quereinstieg"
     - "quereinsteiger"
     - "berufseinsteiger"
@@ -71,14 +84,6 @@ profile:
     - "vollzeit"
     - "minijob"
     - "familienfreundlich"
-    - "kita"
-    - "kindergarten"
-    - "kinder"
-    - "schule"
-    - "betreuung"
-    - "integration"
-    - "inklusion"
-    - "hauswirtschaft"
 
   # Jobs above B1 are rejected. Ambiguous phrases such as "gute Deutschkenntnisse"
   # are kept but flagged for manual verification.
@@ -133,11 +138,13 @@ profile:
     - "leitung"
     - "teamleitung"
     - "einrichtungsleitung"
+    - "kita-leitung"
+    - "schulleitung"
     - "pflegedienstleitung"
 
 location:
-  # The BA search itself is configured to a 15 km radius around Minden. This
-  # allow-list is a second safety gate for vacancy detail pages.
+  # BA search uses a 20 km radius around Minden. This allow-list is a second
+  # safety gate for structured vacancy locations.
   allowed_places:
     - "minden"
     - "minden, westfalen"
@@ -154,6 +161,12 @@ location:
     - "helpsen"
     - "nienstädt"
     - "nienstaedt"
+    - "seggebruch"
+    - "obernkirchen"
+    - "löhne"
+    - "loehne"
+    - "hüllhorst"
+    - "huellhorst"
   allowed_postcodes:
     - "32423"
     - "32425"
@@ -165,38 +178,43 @@ location:
     - "32545"
     - "32547"
     - "32549"
+    - "32584"
     - "31675"
     - "31707"
     - "31708"
     - "31711"
     - "31688"
     - "31691"
+    - "31683"
+    - "32609"
 
 sources:
-  - name: "Bundesagentur Minden 15 km"
+  - name: "Bundesagentur Kinderbetreuung Minden 20 km"
     type: "crawl"
     enabled: true
-    trusted_radius_km: 15
+    trusted_radius_km: 20
     start_urls:
-      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&umkreis=15&wo=32423+Minden&was=Kita+Helfer"
-      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&umkreis=15&wo=32423+Minden&was=Kita+Assistenz"
-      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&umkreis=15&wo=32423+Minden&was=P%C3%A4dagogische+Hilfskraft"
-      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&umkreis=15&wo=32423+Minden&was=Integrationskraft"
-      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&umkreis=15&wo=32423+Minden&was=Schulbegleitung"
-      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&umkreis=15&wo=32423+Minden&was=Betreuungskraft"
-      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&umkreis=15&wo=32423+Minden&was=Alltagsbegleiter"
-      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&umkreis=15&wo=32423+Minden&was=Hauswirtschaftskraft"
-      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&umkreis=15&wo=32423+Minden&was=Pflegehelfer"
-      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&umkreis=15&wo=32423+Minden&was=K%C3%BCchenhilfe"
-      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&umkreis=15&wo=32423+Minden&was=Reinigungskraft"
-      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&umkreis=15&wo=32423+Minden&was=Lagerhelfer"
-      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&umkreis=15&wo=32423+Minden&was=Kommissionierer"
-      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&umkreis=15&wo=32423+Minden&was=Verpacker"
-      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&umkreis=15&wo=32423+Minden&was=Produktionshelfer"
-      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&umkreis=15&wo=32423+Minden&was=Servicekraft"
-      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&umkreis=15&wo=32423+Minden&quereinstieg=true"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&umkreis=20&wo=32423+Minden&was=Erzieher"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&umkreis=20&wo=32423+Minden&was=P%C3%A4dagogische+Fachkraft"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&umkreis=20&wo=32423+Minden&was=Kinderpfleger"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&umkreis=20&wo=32423+Minden&was=Sozialp%C3%A4dagogische+Assistenz"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&umkreis=20&wo=32423+Minden&was=P%C3%A4dagogische+Erg%C3%A4nzungskraft"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&umkreis=20&wo=32423+Minden&was=Kita+Helfer"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&umkreis=20&wo=32423+Minden&was=Kita+Assistenz"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&umkreis=20&wo=32423+Minden&was=P%C3%A4dagogische+Hilfskraft"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&umkreis=20&wo=32423+Minden&was=Kindergarten+Helfer"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&umkreis=20&wo=32423+Minden&was=Alltagshelfer+Kita"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&umkreis=20&wo=32423+Minden&was=Schulbegleitung"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&umkreis=20&wo=32423+Minden&was=Schulassistenz"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&umkreis=20&wo=32423+Minden&was=Integrationskraft"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&umkreis=20&wo=32423+Minden&was=Integrationshelfer"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&umkreis=20&wo=32423+Minden&was=Inklusionsassistenz"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&umkreis=20&wo=32423+Minden&was=Teilhabeassistenz"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&umkreis=20&wo=32423+Minden&was=OGS+Betreuung"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&umkreis=20&wo=32423+Minden&was=P%C3%A4dagogische+Mitarbeiter+Schule"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&umkreis=20&wo=32423+Minden&was=Quereinsteiger+Kita"
     allowed_domains: ["arbeitsagentur.de"]
     follow_url_contains: ["/jobsuche/suche?"]
     job_url_contains: ["/jobsuche/jobdetail/"]
-    max_pages: 420
-    max_jobs: 900
+    max_pages: 360
+    max_jobs: 800

@@ -1,7 +1,7 @@
 import re
 
 
-WIFE_LOCATION_POLICY_VERSION = "minden-15km-v1"
+WIFE_LOCATION_POLICY_VERSION = "minden-20km-v2"
 
 
 def _normalise(value: str) -> str:
@@ -36,7 +36,7 @@ def analyse_minden_radius_location(
     explicit_location: str,
     config: dict,
 ) -> dict:
-    """Strictly accept only locations configured for the Minden 15 km search."""
+    """Strictly accept only locations configured for the Minden 20 km search."""
 
     location_cfg = config.get("location", {})
     places = [str(value) for value in location_cfg.get("allowed_places", [])]
