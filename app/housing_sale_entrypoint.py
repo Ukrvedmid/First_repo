@@ -19,11 +19,13 @@ _copy_first("TELEGRAM_CHAT_ID", "TG_CHAT_ID", "CHAT_ID")
 
 from app import housing_sale_agent  # noqa: E402
 from app.housing_all_resources import enable_all_resource_sale  # noqa: E402
+from app.housing_deep_domains import enable_deep_domain_sale  # noqa: E402
 
-# Add an unrestricted public/indexed-resource discovery layer on top of the
-# direct sale portals. Discovered public pages are opened and parsed when the
-# site allows normal HTTP access; protections and login walls are never bypassed.
+# Search all public/indexed resources, then deeply crawl relevant internal pages
+# on dynamically discovered local/regional property domains. Login/CAPTCHA and
+# robots restrictions are never bypassed.
 enable_all_resource_sale(housing_sale_agent)
+enable_deep_domain_sale(housing_sale_agent)
 
 
 if __name__ == "__main__":
