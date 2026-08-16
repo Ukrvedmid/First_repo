@@ -1,5 +1,6 @@
 import unittest
 
+from app import housing_agent
 from app import housing_deep_domains as deep
 
 
@@ -14,6 +15,7 @@ class DeepPropertyDomainTests(unittest.TestCase):
         self.assertTrue(deep._relevant_link("https://example.de/immobilien/haus-kaufen-minden"))
         self.assertTrue(deep._relevant_link("https://example.de/angebote/einfamilienhaus-123"))
         self.assertTrue(deep._relevant_link("https://example.de/objekt/haus-zur-miete"))
+        self.assertTrue(deep._relevant_link("https://example.de/suchen/anzeige-dh-zur-miete-123"))
         self.assertFalse(deep._relevant_link("https://example.de/datenschutz"))
         self.assertFalse(deep._relevant_link("https://example.de/kontakt"))
 
@@ -29,6 +31,19 @@ class DeepPropertyDomainTests(unittest.TestCase):
     def test_canonical_removes_fragment_but_keeps_property_query(self):
         value = deep._canonical("https://Example.de/immobilien/haus?id=7#photos")
         self.assertEqual(value, "https://example.de/immobilien/haus?id=7")
+
+    def test_category_page_is_not_mistaken_for_single_property(self):
+        text = "Haus mieten Minden 1.300 € 100 m² 4 Zimmer"
+        self.assertFalse(
+            deep._likely_detail_page(housing_agent, "https://www.immobilien-minden.de/", text)
+        )
+        self.assertTrue(
+            deep._likely_detail_page(
+                housing_agent,
+                "https://www.immobilien-minden.de/suchen/anzeige-dh-zur-miete-123/",
+                text,
+            )
+        )
 
 
 if __name__ == "__main__":
