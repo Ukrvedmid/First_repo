@@ -21,12 +21,13 @@ _copy_first("TELEGRAM_CHAT_ID", "TG_CHAT_ID", "CHAT_ID")
 from app import housing_agent  # noqa: E402  (env aliases must be set first)
 from app.housing_coverage import enable_broad_coverage  # noqa: E402
 from app.housing_all_resources import enable_all_resource_rent  # noqa: E402
+from app.housing_deep_domains import enable_deep_domain_rent  # noqa: E402
 
-# Kleinanzeigen is only one source. First add known public portals, then an
-# unrestricted public/indexed-resource discovery layer that also follows the
-# discovered page itself when access is allowed.
+# Search strategy: known portals -> unrestricted search discovery -> deep crawl
+# of public property pages inside dynamically discovered local/regional domains.
 enable_broad_coverage(housing_agent)
 enable_all_resource_rent(housing_agent)
+enable_deep_domain_rent(housing_agent)
 
 
 if __name__ == "__main__":
