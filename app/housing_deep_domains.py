@@ -35,6 +35,7 @@ RELEVANT_PATH_TERMS = (
     "verkauf",
     "objekt",
     "expose",
+    "anzeige",
     "angebot",
     "wohnen",
     "einfamilien",
@@ -43,6 +44,15 @@ RELEVANT_PATH_TERMS = (
     "bungalow",
     "zwangsversteiger",
     "zvg",
+)
+
+DETAIL_PATH_TERMS = (
+    "expose",
+    "objekt",
+    "anzeige",
+    "property",
+    "detail",
+    "angebot/",
 )
 
 IGNORE_PATH_TERMS = (
@@ -60,6 +70,23 @@ IGNORE_PATH_TERMS = (
     "wp-admin",
     "wp-login",
 )
+
+GENERIC_CATEGORY_PATHS = {
+    "",
+    "/",
+    "/immobilien",
+    "/immobilien/",
+    "/immobilien-finden",
+    "/immobilien-finden/",
+    "/kaufen",
+    "/kaufen/",
+    "/mieten",
+    "/mieten/",
+    "/haus-kaufen",
+    "/haus-kaufen/",
+    "/haus-mieten",
+    "/haus-mieten/",
+}
 
 # Verified regional/public resources worth seeding even before search-engine
 # discovery. Search results still add arbitrary new domains dynamically.
@@ -90,7 +117,8 @@ def _canonical(url: str) -> str:
     parsed = urlparse(url)
     if parsed.scheme not in {"http", "https"} or not parsed.netloc:
         return ""
-    # Fragments and tracking query strings do not identify a different property.
+    # Fragments do not identify a different property. Keep functional query
+    # strings because some local sites identify an object only by ?id=...
     return urlunparse((parsed.scheme, parsed.netloc.lower(), parsed.path or "/", "", parsed.query, ""))
 
 
@@ -114,6 +142,28 @@ def _relevant_link(url: str) -> bool:
     if parsed.path.lower().endswith((".jpg", ".jpeg", ".png", ".gif", ".webp", ".svg", ".zip", ".mp4", ".mp3")):
         return False
     return any(term in text for term in RELEVANT_PATH_TERMS)
+
+
+def _likely_detail_page(agent, url: str, text: str) -> bool:
+    path = urlparse(url).path.lower()
+    if path in GENERIC_CATEGORY_PATHS:
+        return False
+    if any(term in path for term in DETAIL_PATH_TERMS):
+        return True
+
+    # Some small agents use opaque slugs/IDs instead of /expose/ or /objekt/.
+    # In that case accept only pages that look like one property, not a results
+    # grid containing many prices and areas.
+    prices = agent.PRICE_RE.findall(text)
+    areas = agent.AREA_RE.findall(text)
+    rooms = agent.ROOMS_RE.findall(text)
+    depth = len([part for part in path.split("/") if part])
+    return (
+        depth >= 2
+        and 1 <= len(prices) <= 3
+        and 1 <= len(areas) <= 3
+        and len(rooms) <= 3
+    )
 
 
 def _page_text(agent, response) -> tuple[str, str, BeautifulSoup | None]:
@@ -262,7 +312,7 @@ def _crawl_domain(agent, session, seed_urls: list[str], predicate, source_prefix
             continue
         pages += 1
         title, text, soup = _page_text(agent, response)
-        if text and predicate(agent.normalize(text)):
+        if text and predicate(agent.normalize(text)) and _likely_detail_page(agent, response.url, text):
             results.append(_listing_from_text(agent, f"{source_prefix}/{host}", response.url, title, text))
 
         if soup is None:
