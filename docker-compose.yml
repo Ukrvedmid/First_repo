@@ -48,6 +48,21 @@ services:
     volumes:
       - /home/ultbear/minden-radar/data:/data
 
+  minden-tours:
+    build: .
+    restart: unless-stopped
+    command: ["python", "-m", "app.tour_entrypoint"]
+    env_file:
+      - /home/ultbear/minden-radar/.env
+    environment:
+      TOUR_DEPARTURE_START: "2026-08-24"
+      TOUR_DEPARTURE_END: "2026-08-31"
+      TOUR_RETURN_BY: "2026-09-02"
+      TOUR_DB_PATH: /data/tour-deals.db
+      TOUR_SCAN_INTERVAL_SECONDS: "1800"
+    volumes:
+      - /home/ultbear/minden-radar/data:/data
+
 volumes:
   agent_data:
   wife_agent_data:
