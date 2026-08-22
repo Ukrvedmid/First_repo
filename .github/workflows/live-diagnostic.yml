@@ -9,25 +9,31 @@ on:
 
 permissions:
   contents: read
+  issues: write
 
 jobs:
   diagnostic:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - name: Checkout
+      - name: Checkout production configuration
         uses: actions/checkout@v4
+        with:
+          ref: production
 
       - name: Prepare non-secret environment
-        run: cp .env.example .env
+        run: |
+          cp .env.example .env
+          sudo mkdir -p /home/ultbear/minden-radar
+          sudo cp .env.example /home/ultbear/minden-radar/.env
 
       - name: Build diagnostic image
-        run: docker compose build
+        run: docker compose build agent
 
       - name: Run one live scan
         run: |
           set -o pipefail
-          timeout 1500 docker compose run --rm \
+          timeout 1500 docker compose run --rm --no-deps \
             -e RUN_ONCE=1 \
             -e JOB_SUMMARY_PROVIDER=fallback \
             agent 2>&1 | tee live-diagnostic.log
@@ -36,4 +42,26 @@ jobs:
         if: always()
         run: |
           echo "===== LIVE DIAGNOSTIC SUMMARY ====="
-          grep -E "\[INFO\] .*fetched [0-9]+ items|Germany-only location filter|new matching jobs|Ukrainian summary provider|\[ERROR\]|\[FATAL-SCAN\]" live-diagnostic.log 2>/dev/null | tail -n 160 || true
+          grep -E "\[INFO\] .*fetched [0-9]+ items|Germany-only location filter|new matching jobs|Ukrainian summary provider|\[WARN\]|\[ERROR\]|\[FATAL-SCAN\]" live-diagnostic.log 2>/dev/null | tail -n 240 || true
+
+      - name: Publish diagnostic summary to issue 3
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          {
+            echo "## Live diagnostic — $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
+            echo
+            echo "Workflow commit: \`${GITHUB_SHA}\`"
+            echo "Tested branch: \`production\`"
+            echo "Workflow result before this reporting step: **${{ job.status }}**"
+            echo
+            echo '```text'
+            if [[ -f live-diagnostic.log ]]; then
+              grep -E "\[INFO\] .*fetched [0-9]+ items|Germany-only location filter|new matching jobs|Ukrainian summary provider|\[WARN\]|\[ERROR\]|\[FATAL-SCAN\]" live-diagnostic.log | tail -n 240 || true
+            else
+              echo "live-diagnostic.log was not created; build or setup failed before the scan."
+            fi
+            echo '```'
+          } > diagnostic-comment.md
+          gh issue comment 3 --repo "${GITHUB_REPOSITORY}" --body-file diagnostic-comment.md
