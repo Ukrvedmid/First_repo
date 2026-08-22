@@ -16,4 +16,4 @@ COPY extra_profile.yaml .
 COPY extra_sources.yaml .
 COPY source_overrides.yaml .
 
-CMD ["python", "-m", "app.main"]
+CMD ["python", "-m", "app.priority_agent"]
