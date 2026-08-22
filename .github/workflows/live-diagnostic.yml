@@ -3,8 +3,13 @@ name: Live vacancy diagnostic
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [main, production]
     paths:
+      - "config.yaml"
+      - "extra_profile.yaml"
+      - "extra_sources.yaml"
+      - "source_overrides.yaml"
+      - "app/**"
       - ".github/workflows/live-diagnostic.yml"
 
 permissions:
@@ -19,15 +24,18 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Prepare non-secret environment
-        run: cp .env.example .env
+        run: |
+          cp .env.example .env
+          sudo mkdir -p /home/ultbear/minden-radar
+          sudo cp .env.example /home/ultbear/minden-radar/.env
 
       - name: Build diagnostic image
-        run: docker compose build
+        run: docker compose build agent
 
       - name: Run one live scan
         run: |
           set -o pipefail
-          timeout 1500 docker compose run --rm \
+          timeout 1500 docker compose run --rm --no-deps \
             -e RUN_ONCE=1 \
             -e JOB_SUMMARY_PROVIDER=fallback \
             agent 2>&1 | tee live-diagnostic.log
@@ -36,4 +44,4 @@ jobs:
         if: always()
         run: |
           echo "===== LIVE DIAGNOSTIC SUMMARY ====="
-          grep -E "\[INFO\] .*fetched [0-9]+ items|Germany-only location filter|new matching jobs|Ukrainian summary provider|\[ERROR\]|\[FATAL-SCAN\]" live-diagnostic.log 2>/dev/null | tail -n 160 || true
+          grep -E "\[INFO\] .*fetched [0-9]+ items|Germany-only location filter|new matching jobs|Ukrainian summary provider|\[WARN\]|\[ERROR\]|\[FATAL-SCAN\]" live-diagnostic.log 2>/dev/null | tail -n 240 || true
