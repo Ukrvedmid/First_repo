@@ -1,33 +1,63 @@
 sources:
-  # Highest-value current marine OEM vacancy. The direct job seed guarantees
-  # that the active Hamburg role is checked even if the ATS search page changes.
+  # Immediate check of the strongest currently open Hamburg vacancy. Keeping it
+  # separate from the broad ATS crawl lets Telegram delivery happen first.
+  - name: "Wartsila Priority Current"
+    type: "crawl"
+    enabled: true
+    scan_priority: 1
+    start_urls:
+      - "https://careers.wartsila.com/job/Hamburg-Field-Service-Commissioning-Engineer/1428656833/"
+    allowed_domains: ["careers.wartsila.com"]
+    job_url_contains: ["/job/"]
+    max_pages: 1
+    max_jobs: 5
+
+  # Broad Germany search remains enabled for future Wärtsilä vacancies. The
+  # direct priority vacancy is excluded here to avoid duplicate delivery.
   - name: "Wartsila Germany"
     type: "crawl"
     enabled: true
-    scan_priority: 10
+    scan_priority: 30
     start_urls:
-      - "https://careers.wartsila.com/job/Hamburg-Field-Service-Commissioning-Engineer/1428656833/"
       - "https://careers.wartsila.com/search/?q=&locationsearch=Germany"
     allowed_domains: ["careers.wartsila.com"]
     follow_url_contains: ["/search/", "/go/"]
     job_url_contains: ["/job/"]
+    job_url_excludes: ["1428656833"]
     max_pages: 70
     max_jobs: 160
 
-  # Current ship-propulsion commissioning, service and technical-support jobs.
-  # Direct seeds make the two strongest roles independent of homepage markup.
-  - name: "SCHOTTEL Marine Propulsion"
+  # Two strongest current ship-propulsion roles are checked before any broad
+  # site crawl. Both pages are direct job pages, so only two requests are needed.
+  - name: "SCHOTTEL Priority Current"
     type: "crawl"
     enabled: true
-    scan_priority: 20
+    scan_priority: 2
     start_urls:
       - "https://jobs.schottel.de/Projektingenieur-mwd-Technischer-Support-de-j398.html"
       - "https://jobs.schottel.de/Service-Techniker-mwd-Aussendienst-de-j250.html"
+    allowed_domains: ["jobs.schottel.de"]
+    job_url_regex: "/[^/?#]+-de-j[0-9]+\\.html$"
+    max_pages: 2
+    max_jobs: 10
+
+  # Broad SCHOTTEL board remains enabled for newly published roles. The two
+  # priority pages are excluded so they cannot be sent a second time.
+  - name: "SCHOTTEL Marine Propulsion"
+    type: "crawl"
+    enabled: true
+    scan_priority: 40
+    start_urls:
       - "https://jobs.schottel.de/"
     allowed_domains: ["jobs.schottel.de"]
     follow_url_contains: ["jobs.schottel.de/"]
     job_url_regex: "/[^/?#]+-de-j[0-9]+\\.html$"
-    job_url_excludes: ["Ausbildung", "Duales-Studium", "Praktikum"]
+    job_url_excludes:
+      - "j398.html"
+      - "j250.html"
+      - "Ausbildung"
+      - "Duales-Studium"
+      - "Praktikum"
     max_pages: 90
     max_jobs: 180
 
