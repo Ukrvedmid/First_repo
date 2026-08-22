@@ -1,4 +1,36 @@
 sources:
+  # Highest-value current marine OEM vacancy. The direct job seed guarantees
+  # that the active Hamburg role is checked even if the ATS search page changes.
+  - name: "Wartsila Germany"
+    type: "crawl"
+    enabled: true
+    scan_priority: 10
+    start_urls:
+      - "https://careers.wartsila.com/job/Hamburg-Field-Service-Commissioning-Engineer/1428656833/"
+      - "https://careers.wartsila.com/search/?q=&locationsearch=Germany"
+    allowed_domains: ["careers.wartsila.com"]
+    follow_url_contains: ["/search/", "/go/"]
+    job_url_contains: ["/job/"]
+    max_pages: 70
+    max_jobs: 160
+
+  # Current ship-propulsion commissioning, service and technical-support jobs.
+  # Direct seeds make the two strongest roles independent of homepage markup.
+  - name: "SCHOTTEL Marine Propulsion"
+    type: "crawl"
+    enabled: true
+    scan_priority: 20
+    start_urls:
+      - "https://jobs.schottel.de/Projektingenieur-mwd-Technischer-Support-de-j398.html"
+      - "https://jobs.schottel.de/Service-Techniker-mwd-Aussendienst-de-j250.html"
+      - "https://jobs.schottel.de/"
+    allowed_domains: ["jobs.schottel.de"]
+    follow_url_contains: ["jobs.schottel.de/"]
+    job_url_regex: "/[^/?#]+-de-j[0-9]+\\.html$"
+    job_url_excludes: ["Ausbildung", "Duales-Studium", "Praktikum"]
+    max_pages: 90
+    max_jobs: 180
+
   # Boskalis' generic vacancy search is JavaScript-driven. The discipline pages
   # are rendered server-side and expose their highlighted vacancy links.
   - name: "Boskalis Careers"
