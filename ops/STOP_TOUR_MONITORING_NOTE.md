@@ -1,0 +1,1 @@
+Tour monitoring was disabled on 2026-08-25 by removing the minden-tours service from docker-compose.yml. This note exists only to make the stop explicit in repository history; it does not run anything.
