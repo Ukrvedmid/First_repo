@@ -3,8 +3,13 @@ name: Live vacancy diagnostic
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [main, production]
     paths:
+      - "config.yaml"
+      - "extra_profile.yaml"
+      - "extra_sources.yaml"
+      - "source_overrides.yaml"
+      - "app/**"
       - ".github/workflows/live-diagnostic.yml"
 
 permissions:
@@ -16,10 +21,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - name: Checkout production configuration
+      - name: Checkout
         uses: actions/checkout@v4
-        with:
-          ref: production
 
       - name: Prepare non-secret environment
         run: |
@@ -52,8 +55,7 @@ jobs:
           {
             echo "## Live diagnostic — $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
             echo
-            echo "Workflow commit: \`${GITHUB_SHA}\`"
-            echo "Tested branch: \`production\`"
+            echo "Commit: \`${GITHUB_SHA}\`"
             echo "Workflow result before this reporting step: **${{ job.status }}**"
             echo
             echo '```text'
