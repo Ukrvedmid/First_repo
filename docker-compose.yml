@@ -28,7 +28,7 @@ services:
       - /home/ultbear/minden-radar/.env
     environment:
       RADAR_HOME_CITY: Minden
-      RADAR_RADIUS_KM: "15"
+      RADAR_RADIUS_KM: "10"
       HOUSING_DB_PATH: /data/housing.db
       HOUSING_SCAN_INTERVAL_SECONDS: "1800"
     volumes:
