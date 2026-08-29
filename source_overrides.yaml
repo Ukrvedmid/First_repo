@@ -1,6 +1,5 @@
 sources:
-  # Immediate check of the strongest currently open Hamburg vacancy. Keeping it
-  # separate from the broad ATS crawl lets Telegram delivery happen first.
+  # Immediate check of the strongest currently open Hamburg vacancy.
   - name: "Wartsila Priority Current"
     type: "crawl"
     enabled: true
@@ -26,8 +25,8 @@ sources:
       - "bsm.teamtailor.com"
       - "bsm-bsm-cruise.teamtailor.com"
     job_url_contains: ["/jobs/"]
-    max_pages: 40
-    max_jobs: 120
+    max_pages: 80
+    max_jobs: 250
 
   - name: "Peter Dohle Hamburg Shipmanagement"
     type: "crawl"
@@ -39,8 +38,8 @@ sources:
     allowed_domains: ["doehle.jobs.personio.de"]
     follow_url_contains: ["doehle.jobs.personio.de/"]
     job_url_contains: ["/job/"]
-    max_pages: 50
-    max_jobs: 120
+    max_pages: 100
+    max_jobs: 250
 
   - name: "Marine People Germany English"
     type: "crawl"
@@ -52,26 +51,64 @@ sources:
     allowed_domains: ["marinepeople.com"]
     follow_url_contains: ["/jobs/"]
     job_url_regex: "/jobs/[0-9]+-[^/?#]+/?$"
-    max_pages: 60
-    max_jobs: 150
+    max_pages: 120
+    max_jobs: 300
 
-  # Broad Germany search remains enabled for future Wärtsilä vacancies. The
-  # direct priority vacancy is excluded here to avoid duplicate delivery.
+  # Hamburg ship management employer with current onshore superintendent jobs.
+  - name: "DAL JTE Hamburg Onshore"
+    type: "crawl"
+    enabled: true
+    scan_priority: 6
+    start_urls:
+      - "https://careers.rantzau.de/home"
+    allowed_domains: ["careers.rantzau.de"]
+    follow_url_contains: ["careers.rantzau.de/"]
+    job_url_contains: ["/job", "/jobs", "/position", "/vacanc"]
+    max_pages: 120
+    max_jobs: 250
+
+  # Global ship manager; English-first international shore opportunities.
+  - name: "VGroup Global Onshore"
+    type: "crawl"
+    enabled: true
+    scan_priority: 7
+    start_urls:
+      - "https://vgroup.pinpointhq.com/"
+    allowed_domains: ["vgroup.pinpointhq.com"]
+    follow_url_contains: ["vgroup.pinpointhq.com/"]
+    job_url_contains: ["/postings/", "/jobs/", "/vacancies/"]
+    max_pages: 220
+    max_jobs: 500
+
+  # Carnival's current corporate ATS includes Hamburg marine/technical jobs.
+  - name: "Carnival Maritime Current ATS"
+    type: "crawl"
+    enabled: true
+    scan_priority: 8
+    start_urls:
+      - "https://jobs.carnivalcorp.com/search-jobs/Hamburg%2C%20Germany/40306/4/2921044-2911297-2911298-2911299/53x5507/9x993"
+      - "https://jobs.carnivalcorp.com/search-jobs/marine/Hamburg%2C%20Germany/40306/1/4/2921044-2911297-2911298-2911299/53x5507/9x993/50/2"
+    allowed_domains: ["jobs.carnivalcorp.com"]
+    follow_url_contains: ["/search-jobs/", "/job/"]
+    job_url_contains: ["/job/"]
+    max_pages: 180
+    max_jobs: 450
+
+  # Broad Germany search remains enabled for future Wärtsilä vacancies.
   - name: "Wartsila Germany"
     type: "crawl"
     enabled: true
     scan_priority: 30
     start_urls:
       - "https://careers.wartsila.com/search/?q=&locationsearch=Germany"
+      - "https://careers.wartsila.com/go/Engineering/2983401/?sortColumn=referencedate&sortDirection=desc"
     allowed_domains: ["careers.wartsila.com"]
     follow_url_contains: ["/search/", "/go/"]
     job_url_contains: ["/job/"]
     job_url_excludes: ["1428656833"]
-    max_pages: 70
-    max_jobs: 160
+    max_pages: 180
+    max_jobs: 500
 
-  # Two strongest current ship-propulsion roles are checked before any broad
-  # site crawl. Both pages are direct job pages, so only two requests are needed.
   - name: "SCHOTTEL Priority Current"
     type: "crawl"
     enabled: true
@@ -84,8 +121,6 @@ sources:
     max_pages: 2
     max_jobs: 10
 
-  # Broad SCHOTTEL board remains enabled for newly published roles. The two
-  # priority pages are excluded so they cannot be sent a second time.
   - name: "SCHOTTEL Marine Propulsion"
     type: "crawl"
     enabled: true
@@ -101,11 +136,9 @@ sources:
       - "Ausbildung"
       - "Duales-Studium"
       - "Praktikum"
-    max_pages: 90
-    max_jobs: 180
+    max_pages: 180
+    max_jobs: 400
 
-  # Boskalis' generic vacancy search is JavaScript-driven. The discipline pages
-  # are rendered server-side and expose their highlighted vacancy links.
   - name: "Boskalis Careers"
     type: "crawl"
     enabled: true
@@ -117,18 +150,70 @@ sources:
       - "https://careers.boskalis.com/option/function/crew"
     allowed_domains: ["careers.boskalis.com"]
     job_url_regex: "/vacancy/[0-9]+/[^/?#]+/?$"
-    max_pages: 60
-    max_jobs: 200
+    max_pages: 150
+    max_jobs: 400
 
-  # DOF's public website loads its vacancy list with JavaScript. DOF uses the
-  # Workable account 'dof', whose public JSON endpoint exposes published jobs.
   - name: "DOF Careers"
     type: "workable"
     enabled: true
     account: "dof"
 
-  # High-value German searches for shore-based service of marine machinery and
-  # shipboard equipment: commissioning, field service, maintenance and support.
+  # Deep official German labour-market sweep. Queries deliberately overlap:
+  # false positives are removed later by the hard maritime-context matcher.
+  - name: "Bundesagentur Deep Marine Germany"
+    type: "crawl"
+    enabled: true
+    scan_priority: 20
+    start_urls:
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Technical%20Superintendent"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Assistant%20Technical%20Superintendent"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Marine%20Superintendent"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Fleet%20Technical%20Manager"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Technical%20Vessel%20Manager"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Port%20Engineer"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Marine%20Surveyor"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Ship%20Surveyor"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Marine%20Inspector"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Marine%20Project%20Engineer"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Project%20Engineer%20Shipbuilding"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Project%20Manager%20Shipbuilding"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Newbuilding%20Superintendent"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Drydock%20Superintendent"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Marine%20Service%20Engineer"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Field%20Service%20Engineer%20Marine"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Commissioning%20Engineer%20Marine"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Technical%20Support%20Marine"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Marine%20Maintenance%20Engineer"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Marine%20Reliability%20Engineer"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Ship%20Equipment%20Service"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Ship%20Machinery%20Service"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Marine%20Propulsion%20Service"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Ship%20Propulsion%20Service"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Marine%20Automation%20Service"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Marine%20Diesel%20Service"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Ship%20Repair%20Engineer"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Shipyard%20Engineer"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Vessel%20Performance%20Engineer"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Fleet%20Performance%20Engineer"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Schiffsbetriebstechnik"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Technischer%20Superintendent"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Schiffsinspektor"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Serviceingenieur%20Schiff"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Servicetechniker%20Schiff"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Inbetriebnahmeingenieur%20Schiff"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Instandhaltungsingenieur%20Schiff"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Schiffsmotor%20Service"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Schiffsantrieb%20Service"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Schiffsausr%C3%BCstung%20Service"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Projektingenieur%20Schiffbau"
+      - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&was=Projektleiter%20Schiffbau"
+    allowed_domains: ["arbeitsagentur.de"]
+    follow_url_contains: ["/jobsuche/suche?"]
+    job_url_contains: ["/jobsuche/jobdetail/"]
+    max_pages: 900
+    max_jobs: 1400
+
+  # Retained focused service sweep for redundancy.
   - name: "Bundesagentur Marine Service Commissioning"
     type: "crawl"
     enabled: true
@@ -148,5 +233,5 @@ sources:
     allowed_domains: ["arbeitsagentur.de"]
     follow_url_contains: ["/jobsuche/suche?"]
     job_url_contains: ["/jobsuche/jobdetail/"]
-    max_pages: 420
-    max_jobs: 800
+    max_pages: 500
+    max_jobs: 900
