@@ -12,6 +12,49 @@ sources:
     max_pages: 1
     max_jobs: 5
 
+  # English-first shore roles in Germany that match a senior marine engineer.
+  - name: "BSM Hamburg English Marine"
+    type: "crawl"
+    enabled: true
+    scan_priority: 3
+    start_urls:
+      - "https://bsm.teamtailor.com/jobs/6931830-technical-superintendent-m-f-d-offshore"
+      - "https://bsm.teamtailor.com/jobs/7959272-technical-superintendent-m-f-d-lng-bunker-vessels"
+      - "https://bsm-bsm-cruise.teamtailor.com/jobs/7563765-assistant-technical-superintendent-cruise-m-f-d"
+      - "https://bsm.teamtailor.com/"
+    allowed_domains:
+      - "bsm.teamtailor.com"
+      - "bsm-bsm-cruise.teamtailor.com"
+    job_url_contains: ["/jobs/"]
+    max_pages: 40
+    max_jobs: 120
+
+  - name: "Peter Dohle Hamburg Shipmanagement"
+    type: "crawl"
+    enabled: true
+    scan_priority: 4
+    start_urls:
+      - "https://doehle.jobs.personio.de/job/1350610?language=en"
+      - "https://doehle.jobs.personio.de/?language=en"
+    allowed_domains: ["doehle.jobs.personio.de"]
+    follow_url_contains: ["doehle.jobs.personio.de/"]
+    job_url_contains: ["/job/"]
+    max_pages: 50
+    max_jobs: 120
+
+  - name: "Marine People Germany English"
+    type: "crawl"
+    enabled: true
+    scan_priority: 5
+    start_urls:
+      - "https://marinepeople.com/jobs/14360-fleet-management-technical-superintendent-cruise-hamburg-germany/"
+      - "https://marinepeople.com/jobs/"
+    allowed_domains: ["marinepeople.com"]
+    follow_url_contains: ["/jobs/"]
+    job_url_regex: "/jobs/[0-9]+-[^/?#]+/?$"
+    max_pages: 60
+    max_jobs: 150
+
   # Broad Germany search remains enabled for future Wärtsilä vacancies. The
   # direct priority vacancy is excluded here to avoid duplicate delivery.
   - name: "Wartsila Germany"
