@@ -1,3 +1,5 @@
 Autodeploy end-to-end verification marker.
 Created: 2026-08-13
-This file has no runtime effect and exists only to confirm the CI -> production -> server deployment pipeline.
+Last trigger: 2026-08-29 17:01 Europe/Zagreb
+Purpose: force the production branch change detector on the server to deploy the latest deep marine job-search configuration.
+This file has no runtime effect.
