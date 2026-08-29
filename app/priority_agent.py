@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 
 import requests
 
+from app.candidate_fit import analyse_candidate_fit
 from app.db import has_seen, mark_seen
 from app.location import analyse_germany_location
 from app.main import (
@@ -30,6 +31,7 @@ def _deliver(items: list[dict], delay: float) -> int:
     items.sort(
         key=lambda item: (
             item["analysis"]["score"],
+            item.get("candidate_fit_score", 0),
             item["title"].casefold(),
         ),
         reverse=True,
@@ -79,6 +81,7 @@ def run_once() -> None:
 
     germany_confirmed = 0
     location_rejected = 0
+    professional_fit_rejected = 0
     enabled_sources = 0
     successful_sources = 0
     failed_sources = 0
@@ -91,10 +94,7 @@ def run_once() -> None:
         flush=True,
     )
 
-    sources = sorted(
-        config.get("sources", []),
-        key=_source_priority,
-    )
+    sources = sorted(config.get("sources", []), key=_source_priority)
 
     with requests.Session() as session:
         for source in sources:
@@ -148,6 +148,26 @@ def run_once() -> None:
                     mark_seen(fp, name, title, url, now)
                     continue
 
+                candidate_fit = analyse_candidate_fit(title, description)
+                if not candidate_fit["eligible"]:
+                    professional_fit_rejected += 1
+                    print(
+                        f"[INFO] professional-fit rejected: {title} — "
+                        f"{candidate_fit['reject_reason']}",
+                        flush=True,
+                    )
+                    mark_seen(fp, name, title, url, now)
+                    continue
+
+                if candidate_fit.get("language_warning"):
+                    analysis.setdefault("potential_gaps", []).append(
+                        "требуется сильный немецкий (обычно C1/переговорный уровень)"
+                    )
+
+                analysis.setdefault("matched", []).extend(
+                    candidate_fit.get("reasons", [])[:3]
+                )
+
                 pending_fingerprints.add(fp)
                 source_pending.append(
                     {
@@ -159,6 +179,7 @@ def run_once() -> None:
                         "location": location_result["display"],
                         "description": description,
                         "analysis": analysis,
+                        "candidate_fit_score": candidate_fit["score"],
                     }
                 )
 
@@ -174,6 +195,11 @@ def run_once() -> None:
     print(
         "[INFO] Germany-only location filter: "
         f"confirmed {germany_confirmed}, rejected {location_rejected}",
+        flush=True,
+    )
+    print(
+        "[INFO] professional-fit filter: "
+        f"rejected {professional_fit_rejected}",
         flush=True,
     )
     print(
