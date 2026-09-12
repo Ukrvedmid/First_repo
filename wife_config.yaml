@@ -191,7 +191,8 @@ location:
 sources:
   - name: "Bundesagentur Kinderbetreuung Minden 20 km"
     type: "crawl"
-    enabled: true
+    # Temporarily paused at the user's request on 2026-09-12; set true to resume.
+    enabled: false
     trusted_radius_km: 20
     start_urls:
       - "https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&sort=moddatum&umkreis=20&wo=32423+Minden&was=Erzieher"
