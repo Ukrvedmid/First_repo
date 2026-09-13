@@ -57,6 +57,21 @@ sources:
     max_pages: 250
     max_jobs: 500
 
+  # MacGregor Germany: highly relevant hands-on marine equipment service roles.
+  # Current vacancies cover hatch covers, ramps, winches, cranes and steering
+  # gear, with work on vessels and in shipyards. Applications are in English.
+  - name: "MacGregor Germany Marine Service"
+    type: "crawl"
+    enabled: true
+    start_urls:
+      - "https://careers.macgregor.com/job/Pinneberg-Service-Engineer/1362581455/"
+      - "https://careers.macgregor.com/search/?q=&locationsearch=Germany"
+    allowed_domains: ["careers.macgregor.com"]
+    follow_url_contains: ["/search/", "/go/"]
+    job_url_contains: ["/job/"]
+    max_pages: 180
+    max_jobs: 450
+
   # Classification, plan approval, survey and maritime advisory vacancies.
   - name: "RINA Germany Marine"
     type: "crawl"
