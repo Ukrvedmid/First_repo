@@ -14,6 +14,14 @@ DIRECT_SHORE_TITLES = [
     "marine inspector",
     "schiffsinspektor",
     "technischer superintendent",
+    "marine service engineer",
+    "service engineer marine",
+    "field service engineer marine",
+    "serviceingenieur schiff",
+    "serviceingenieur marine",
+    "serviceingenieur schiffsantrieb",
+    "servicetechniker schiff",
+    "inbetriebnahmeingenieur schiff",
 ]
 
 # Evidence that the vacancy itself belongs to the maritime/ship domain. Generic
@@ -70,10 +78,15 @@ MARITIME_CORE_TERMS = [
     "schiffsmotor",
     "schiffsmotoren",
     "schiffsantrieb",
+    "schiffsantriebe",
+    "schiffsantrieben",
     "schiffswerft",
+    "werft",
+    "werften",
     "werftzeit",
     "trockendock",
     "klassifikationsgesellschaft",
+    "an bord",
 ]
 
 # Strong signs that the employer explicitly values experience brought ashore
@@ -144,6 +157,8 @@ MACHINERY_TERMS = [
     "schiffsmotor",
     "schiffsmotoren",
     "schiffsantrieb",
+    "schiffsantriebe",
+    "schiffsantrieben",
     "wartung",
     "instandhaltung",
     "reparatur",
@@ -176,6 +191,10 @@ RESPONSIBILITY_TERMS = [
     "instandhaltungsplanung",
     "ersatzteile",
     "werft",
+    "werften",
+    "wartung",
+    "reparatur",
+    "inbetriebnahme",
 ]
 
 # Hard rejects for industries that can share technical vocabulary with marine
@@ -276,8 +295,6 @@ def analyse_candidate_fit(title: str, description: str) -> dict:
     responsibility = _hits(combined, RESPONSIBILITY_TERMS)
     language_warning = bool(_hits(combined, STRONG_GERMAN_TERMS))
 
-    # Absolute domain gate: no explicit ship/marine evidence means no delivery.
-    # Direct maritime shore titles are accepted as maritime evidence themselves.
     maritime_domain = bool(direct or maritime)
     if not maritime_domain:
         return {
@@ -294,9 +311,9 @@ def analyse_candidate_fit(title: str, description: str) -> dict:
     score += min(30, len(machinery) * 5)
     score += min(20, len(responsibility) * 4)
 
-    # Direct superintendent/survey roles still need technical-engineering
-    # evidence. Generic service/project roles need both maritime evidence and a
-    # clear machinery/maintenance/technical responsibility connection.
+    # Direct maritime technical roles need concrete machinery/maintenance or
+    # sea-going evidence. Generic service/project roles need stronger combined
+    # maritime + machinery + shore-responsibility evidence.
     if direct:
         eligible = bool(machinery or sea_to_shore) and score >= 30
     else:
